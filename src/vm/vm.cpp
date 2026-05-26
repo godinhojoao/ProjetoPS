@@ -22,7 +22,20 @@ while(true) {
 */
 
 #include "vm.h"
+#include "../loader/binary_loader.h"
 #include <iostream>
+
+bool VM::load(const std::string& binPath)
+{
+  BinaryLoader loader;
+  uint32_t bytesLoaded = loader.load(binPath, mem);
+  if (bytesLoaded == 0)
+  {
+    return false;
+  }
+  std::cout << "VM: " << bytesLoaded << " bytes carregados de '" << binPath << "'\n";
+  return true;
+}
 
 void VM::run()
 {

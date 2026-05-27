@@ -11,11 +11,20 @@ SRC = src/main.cpp \
 
 OUT = vm
 
+TEST_LOADER_SRC = tests/loader_test.cpp \
+                  src/loader/binary_loader.cpp \
+                  src/memory/memory.cpp
+TEST_LOADER_OUT = test_loader
+
 all:
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
 run: all
-	./$(OUT)
+	./$(OUT) $(ARGS)
+
+test-loader:
+	$(CXX) $(CXXFLAGS) $(TEST_LOADER_SRC) -o $(TEST_LOADER_OUT)
+	./$(TEST_LOADER_OUT)
 
 clean:
-	rm -f $(OUT)
+	rm -f $(OUT) $(TEST_LOADER_OUT)

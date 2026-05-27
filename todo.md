@@ -2,8 +2,6 @@
 
 ## 2o desenvolver a vm
 
-### metade do grupo na funcionalidade da VM (joao g, pessoa a, pessoa b, pessoa c)
-
 - [X] estrutura do projeto e modulos necessarios + makefile pra rodar tudo linkado
 - [ ] base da VM com registradores, flags, pc e memoria (codigo, dados, stack)
 - [ ] ler entrada binario e transformar em estrutura no codigo (executa ADD A,B) etc
@@ -12,7 +10,7 @@
 - [ ] tratamento de loop infinito, erros e etc pra nao quebrar com qualquer coisa?
 - [ ] no fim repassa todas instrucoes pra garantir que temos todas funcionando (cada 1 instrucao e flag, tenta forcar stack overflow tbm)
 
-### metade do grupo na interface da VM (pessoa w, pessoa x, pessoa y, pessoa z)
+### GUI
 
 - [ ] tela pra ler e alterar o codigo
 - [ ] canto pra exibir registradores, flags, pilha e memoria atual

@@ -6,10 +6,13 @@
 
 
 ## Como rodar:
-- `Make run`
+- `make run` — roda sem programa carregado
+- `make run ARGS=programa.bin` — carrega o .bin antes de executar
+- `make test-loader` — roda a suíte de testes do loader
 
 ## Docs
 - [Documentação da VM - teoria](./vm.md)
 - [Documentação da VM - código (nao tem ainda)](./vm-codigo.md)
+- [Loader (formato .bin, API, teste)](./loader.md)
 - [TODO](./todo.md)
 - [Andamento - ve quem fez se precisar perguntar algo daquela coisa](./andamento.txt)

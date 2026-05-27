@@ -10,10 +10,9 @@ Loader: lê o .bin e coloca os 0s e 1s direto na memória da VM
 #include "binary_loader.h"
 #include <fstream>
 #include <iostream>
+#include <constants.h>
 
 // memoria total da VM Z80: 2^16 = 65536 bytes
-static constexpr uint32_t MEMORY_SIZE = 65536u;
-
 uint32_t BinaryLoader::load(const std::string& path, Memory& memory, uint16_t startAddr)
 {
   // abre em modo binario e ja posiciona no fim pra descobrir o tamanho
@@ -34,7 +33,7 @@ uint32_t BinaryLoader::load(const std::string& path, Memory& memory, uint16_t st
   }
 
   // verifica se o conteudo cabe na memoria a partir de startAddr
-  const uint32_t available = MEMORY_SIZE - startAddr;
+  const uint32_t available = VM_MEMORY_IN_BYTES - startAddr;
   if (static_cast<uint32_t>(size) > available)
   {
     std::cerr << "Loader: arquivo nao cabe na memoria (size=" << size

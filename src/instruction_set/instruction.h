@@ -3,24 +3,22 @@
 
 #include <cstdint>
 
-// Registradores de uso geral (8 bits)
-enum class Register : uint8_t {
-    B = 0b000,
-    C = 0b001,
-    D = 0b010,
-    E = 0b011,
-    H = 0b100,
-    L = 0b101,
-    A = 0b111
-};
-
-// Pares de registradores (16 bits)
-enum class RegisterPair : uint8_t {
-    BC = 0b00,
-    DE = 0b01,
-    HL = 0b10,
-    AF = 0b11
-};
+// TODO: remove when all registers are on cpu
+// enum class Register : uint8_t {
+//     B = 0b000,
+//     C = 0b001,
+//     D = 0b010,
+//     E = 0b011,
+//     H = 0b100,
+//     L = 0b101,
+//     A = 0b111
+// };
+// enum class RegisterPair : uint8_t {
+//     BC = 0b00,
+//     DE = 0b01,
+//     HL = 0b10,
+//     AF = 0b11
+// };
 
 // Tipos de operações suportadas pela VM
 enum class OpcodeType : uint8_t {

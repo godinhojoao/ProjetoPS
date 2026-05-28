@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 #include "../memory/memory.h"
+#include "../cpu/cpu.h"
+#include "../instruction_set/decoder.h"
 
 class VM
 {
@@ -18,4 +20,6 @@ public:
 
 private:
   Memory mem;
+  CPU cpu;
+  uint16_t codeEnd = 0;
 };

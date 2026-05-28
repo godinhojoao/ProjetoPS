@@ -5,7 +5,6 @@ SRC = src/main.cpp \
       src/vm/vm.cpp \
       src/cpu/cpu.cpp \
       src/instruction_set/decoder.cpp \
-      src/instruction_set/executor.cpp \
       src/loader/binary_loader.cpp \
       src/memory/memory.cpp
 

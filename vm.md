@@ -53,7 +53,7 @@
 ; vai ser linha comentada
 
 d -> destination
-d -> source
+s -> source
 
 | Categoria | Instrução    | Descrição curta                  | Opcode (binário)                   | Bytes |
 | --------- | ------------ | -------------------------------- | ---------------------------------- | ----- |

@@ -31,13 +31,24 @@ bool CPU::cycle(const Instruction& inst, Memory& mem)
     case OpcodeType::PUSH_RP: {
       auto [hi, lo] = getStackRegistersPair(inst.sourceReg);
       SP--; // -- because stack start on top of memory and grows toward bottom of mem.
-      mem.write(SP, *hi);
+      if (!mem.write(SP, *hi)) {
+        std::cout << "CPU: stack overflow\n";
+        return false;
+      }
       SP--;
-      mem.write(SP, *lo);
+      if (!mem.write(SP, *lo)) {
+        std::cout << "CPU: stack overflow\n";
+        return false;
+      }
       break;
     }
 
     case OpcodeType::POP_RP: {
+      // trying to pop empty stack
+      if (SP == VM_MEMORY_IN_BYTES - 1) {
+        std::cout << "CPU: stack underflow\n";
+        return false;
+      }
       auto [hi, lo] = getStackRegistersPair(inst.destReg);
       *lo = mem.read(SP);
       SP++;

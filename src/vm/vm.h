@@ -21,5 +21,4 @@ public:
 private:
   Memory mem;
   CPU cpu;
-  uint32_t codeEnd = 0;
 };

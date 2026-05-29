@@ -13,7 +13,7 @@ bool VM::load(const std::string& binPath)
   {
     return false;
   }
-  codeEnd = bytesLoaded;
+  mem.setLoadedAreaEnd(bytesLoaded);
   std::cout << "VM: " << bytesLoaded << " bytes carregados de '" << binPath << "'\n";
   return true;
 }
@@ -21,7 +21,7 @@ bool VM::load(const std::string& binPath)
 void VM::run()
 {
   // read entire code from memory, decode instructions, and execute them on CPU
-  while (cpu.getPC() < codeEnd)
+  while (cpu.getPC() < mem.getLoadedAreaEnd())
   {
     Instruction inst = Decoder::decode(mem, cpu.getPC());
     if (!cpu.cycle(inst, mem)) break;

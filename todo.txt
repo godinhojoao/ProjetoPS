@@ -1,0 +1,39 @@
+[ ] - vm
+  - executa codigo objeto (binario)
+  - cpu com registradores, memoria, stack, instrucoes, etc.
+
+[ ] - processador de macros (tradutor)
+  - macro: (subrotina aberta), label com codigo associado
+  - ex chamando macro: SOMA 5,2
+  exemplo de macros z80: https://github.com/jhlagado/firth/blob/master/macros-stack.z80
+    - achar .macro (.endm é o fim) no codigo, pegar codigo e parametros, ir salvando num objeto array de macros ou map (hashtable)
+    - e ai dps fica facil pegar pelo nome
+  1. localiza macro
+  2. substitui troca instrucao pelo esqueleto (codigo associado)
+  3. parametros, substitui valores genericos
+
+[ ] - montador (assembler)
+  - mnemonicos -> binario (codigo objeto)
+
+  - problema classico: referenciar um label ainda nao definido (forward reference), SOLUCAO: montador de 2 passos
+    - 1o passo: varre tudo e monta tabela de simbolos (label -> endereco)
+    - 2o passo: gera o binario resolvendo as referencias com a ajuda da tabela de simbolos
+  - reconhecer include? INCLUDE "utils.asm" (cola codigo no lugar)
+
+  -- exemplo do problema mencionado:
+    JMP END (cade esse end? nao foi definido aqui ainda - tabela de simbolos ja vai saber a referencia pra usar)
+    MOV A, 1
+    END:
+    MOV A, 2
+
+[ ] - ligador
+  - pega arquivos objeto .o (que foram montados separadamente) e junta em um unico executavel
+  - PUBLIC / EXTERN - detalhar mais depois
+
+[ ] - interface com botao pra montar, start, mostrar registradores, espaco pra texto, cli de output debug pra mostrar erros a cada processo
+  - exibe: erros da vm, erros ao montar...
+  [ ] - suporte a multiplos arquivos (funcionando bem com ligador e montador)
+    - montador precisa reconhecer INCLUDE "utils.asm" (cola codigo no lugar)
+    - ligador PUBLIC / EXTERN
+
+

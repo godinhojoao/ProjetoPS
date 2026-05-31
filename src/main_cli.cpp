@@ -5,9 +5,7 @@
 #include "macro_processor/macro_processor.h"
 #include <fstream>
 
-
-int main(int argc, char **argv)
-{
+int main_cli(int argc, char** argv){
   MacroProcessor macroProcessor;
   macroProcessor.findAndStoreMacros("b.asm");
   std::string expandedCode = macroProcessor.getExpandedCode();

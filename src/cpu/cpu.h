@@ -2,7 +2,7 @@
 #include <cstdint>
 #include <utility>
 #include "../instruction_set/instruction.h"
-#include <constants.h>
+#include "../constants.h"
 
 class Memory;
 

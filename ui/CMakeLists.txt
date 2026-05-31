@@ -17,6 +17,19 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        ../src/cpu/cpu.h
+        ../src/cpu/cpu.cpp
+        ../src/instruction_set/decoder.cpp
+        ../src/instruction_set/decoder.h
+        ../src/instruction_set/instruction.h
+        ../src/loader/binary_loader.cpp
+        ../src/loader/binary_loader.h
+        ../src/memory/memory.cpp
+        ../src/memory/memory.h
+        ../src/vm/vm.cpp
+        ../src/vm/vm.h
+        ../src/constants.h
+        ../src/main_cli.cpp
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

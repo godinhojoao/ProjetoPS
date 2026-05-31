@@ -10,7 +10,7 @@ Loader: lê o .bin e coloca os 0s e 1s direto na memória da VM
 #include "binary_loader.h"
 #include <fstream>
 #include <iostream>
-#include <constants.h>
+#include "../constants.h"
 
 // memoria total da VM Z80: 2^16 = 65536 bytes
 uint32_t BinaryLoader::load(const std::string& path, Memory& memory, uint16_t startAddr)

@@ -10,6 +10,8 @@ int main(int argc, char **argv)
 {
   MacroProcessor macroProcessor;
   macroProcessor.findAndStoreMacros("b.asm");
+  std::string expandedCode = macroProcessor.getExpandedCode();
+  std::cout << "expandedCode: \n" << expandedCode << "\n";
 
   // VM vm;
 

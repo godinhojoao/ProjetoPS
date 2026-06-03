@@ -1,21 +1,5 @@
-// 1o estado atual:""
-// bug se tiver macro dentro de codigo (macros no z80 ficam somente no inicio do codigo asm)
-// NOP
-// NOP
-// ADD_VALS 0x05, 0x05
-// .macro ADD_VALS p1, p2 ////// ISSO NAO PODE
-//   NOP
-//   LD B, p1
-//   LD A, p2
-//   ADD A, B
-//   HALT
-// .endm
-// NOP
-// HALT
-
-// 2o outro bug -> permitimos macros com mesmo nome (nao deveria poder -- sobrescreve ou da erro?)
-// 3o expand nem comecamos -> cuidar tamanho de parametros = argumentos
-
+// TODO: faltou só separar melhor o codigo, matar uns ifs, etc
+// se tiver macro com mesmo nome uma definida após a outra, a primeira é sobrescrita
 #include <shared/shared.h>
 #include "macro_processor/macro_processor.h"
 
@@ -25,6 +9,17 @@ enum MACRO_READING_STATE
   PARAM = 1,
   CODE = 2
 };
+
+void MacroProcessor::expandMacro(MacroInstruction instruction, std::vector<std::string> args) {
+  std::vector<std::string> instructionParams = instruction.getParams();
+  bool isValidArgsSize = instructionParams.size() == args.size();
+  if (!isValidArgsSize) {
+    throw std::runtime_error("chamada de macro com quantidade de argumentos invalida");
+  }
+
+  std::string expandedCodeResult = Shared::replaceAllMany( instruction.getCode(), instruction.getParams(), args);
+  this->expandedCode.append(expandedCodeResult);
+}
 
 void MacroProcessor::findAndStoreMacros(std::string file)
 {
@@ -42,12 +37,10 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
   while (std::getline(inFile, line))
   {
-    std::cout << "line->" << line <<"\n";
-    
-    if (line.size() == 0) {
-  
-      continue;
-    }
+    // std::cout << "line->" << line <<"\n";
+
+    // validations
+    if (line.size() == 0) continue;
 
     if (!isReadingMacro && line.find(".endm") == 0) {
       throw std::runtime_error("Nao pode fechar macro que nao foi aberta");
@@ -57,8 +50,8 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       throw std::runtime_error("Nao pode ler macro");
     }
 
-    if (line.find(".macro") == 0 && !isReadingMacro)
-    {
+    // reading macro
+    if (line.find(".macro") == 0 && !isReadingMacro) {
       isReadingMacro = true;
       std::vector<std::string> splittedResult = Shared::split(line, ' ');
 
@@ -84,8 +77,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       continue;
     }
 
-    if (line.find(".endm") == 0 && isReadingMacro)
-    {
+    if (line.find(".endm") == 0 && isReadingMacro) {
       isReadingMacro = false;
       this->macroInstructions.emplace(instruction.getLabel(), instruction);
       instruction = MacroInstruction{};
@@ -93,37 +85,36 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       continue;
     }
 
-    if (currMacroReadingState == CODE)
-    {
+    if (currMacroReadingState == CODE) {
       instruction.appendCode(line);
     }
 
     hasFinishedMacroRead = !isReadingMacro && line.find(".macro") != 0;
-  }
 
-  // debug
-  for (const auto &entry : this->macroInstructions) {
-    const MacroInstruction &macro = entry.second;
-    std::cout << "-------------------\n";
+    // reading code
+    if (hasFinishedMacroRead) {
+      std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
+      std::string firstChunk = splittedCodeLine[0];
 
-    std::cout << "label-> " << macro.getLabel() << "\n";
+      bool isValidInstruction = this->validInstructions.count(firstChunk);
+      if (isValidInstruction) {
+        expandedCode.append(line);
+      }
 
-    for (const auto &param : macro.getParams()) {
-      std::cout << "params-> " << param << "\n";
+      auto it = this->macroInstructions.find(firstChunk);
+      MacroInstruction currMacroInstruction;
+      if (it != this->macroInstructions.end()) {
+        currMacroInstruction = it->second;
+        std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
+
+        this->expandMacro(currMacroInstruction, macroArguments);
+        continue;
+      }
+
+      if (!isValidInstruction) {
+        throw std::runtime_error("nao é macro valida, nem instrucao valida");
+      }
     }
-
-    std::cout << "code-> " << macro.getCode() << "\n";
-    std::cout << "-------------------\n";
   }
-
   inFile.close();
 }
-
-// std::string MacroProcessor::expandMacro(std::vector<uint8_t> args)
-// {
-//   std::string expandedMacro;
-
-//   // this->code
-
-//   return expandedMacro;
-// }

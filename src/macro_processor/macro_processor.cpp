@@ -10,15 +10,14 @@ enum MACRO_READING_STATE
   CODE = 2
 };
 
-void MacroProcessor::expandMacro(MacroInstruction instruction, std::vector<std::string> args) {
+std::string MacroProcessor::expandMacro(MacroInstruction instruction, std::vector<std::string> args) {
   std::vector<std::string> instructionParams = instruction.getParams();
   bool isValidArgsSize = instructionParams.size() == args.size();
   if (!isValidArgsSize) {
     throw std::runtime_error("chamada de macro com quantidade de argumentos invalida");
   }
 
-  std::string expandedCodeResult = Shared::replaceAllMany( instruction.getCode(), instruction.getParams(), args);
-  this->expandedCode.append(expandedCodeResult);
+  return Shared::replaceAllMany( instruction.getCode(), instruction.getParams(), args);
 }
 
 void MacroProcessor::findAndStoreMacros(std::string file)
@@ -37,9 +36,9 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
   while (std::getline(inFile, line))
   {
-    // std::cout << "line->" << line <<"\n";
-
     // validations
+    line = Shared::trim(line);
+    //std::cout << "line->" << line <<"\n";
     if (line.size() == 0) continue;
 
     if (!isReadingMacro && line.find(".endm") == 0) {
@@ -98,7 +97,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
       bool isValidInstruction = this->validInstructions.count(firstChunk);
       if (isValidInstruction) {
-        expandedCode.append(line);
+        this->expandedCode.append(line + "\n");
       }
 
       auto it = this->macroInstructions.find(firstChunk);
@@ -107,7 +106,8 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         currMacroInstruction = it->second;
         std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
 
-        this->expandMacro(currMacroInstruction, macroArguments);
+        std::string expandedCode = this->expandMacro(currMacroInstruction, macroArguments);
+        this->expandedCode.append(expandedCode);
         continue;
       }
 

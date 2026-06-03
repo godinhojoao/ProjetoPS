@@ -10,4 +10,5 @@ public:
     const std::vector<std::string> &params,
     const std::vector<std::string> &args
   );
+  static std::string trim(const std::string &text);
 };

@@ -53,3 +53,12 @@ std::string Shared::replaceAllMany(
 
   return result;
 }
+
+std::string Shared::trim(const std::string &text) {
+    std::string resutl;
+    int start = 0;
+    int end = text.size();
+    while (text[start] == ' ') start++;
+    while (text[end] == ' ') end--;
+    return text.substr(start, end);
+}

@@ -13,7 +13,7 @@ public:
     this->label = label;
   }
   void appendCode(const std::string& code) {
-    this->code += code;
+    this->code += code + "\n";
   }
   void pushParam(const std::string& param) {
     params.push_back(param);
@@ -69,6 +69,6 @@ private:
     {"HALT", true}
   };
   std::string expandedCode;
-  void expandMacro(MacroInstruction instruction, std::vector<std::string> args);
+  std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
 };
 

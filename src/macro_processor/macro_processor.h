@@ -4,6 +4,7 @@
 #include <iostream>
 #include <fstream>
 #include <unordered_map>
+#include <algorithm>
 #include "vm/vm.h"
 
 class MacroInstruction

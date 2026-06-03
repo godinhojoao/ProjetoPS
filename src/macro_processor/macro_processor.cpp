@@ -17,6 +17,12 @@ std::string MacroProcessor::expandMacro(MacroInstruction instruction, std::vecto
     throw std::runtime_error("chamada de macro com quantidade de argumentos invalida");
   }
 
+  for (std::string &arg : args) {
+    size_t comma = arg.find(',');
+    bool existComma = (comma != std::string::npos);
+    if (existComma) arg.erase(comma);
+  }
+
   return Shared::replaceAllMany( instruction.getCode(), instruction.getParams(), args);
 }
 

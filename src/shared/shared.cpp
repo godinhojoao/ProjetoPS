@@ -55,10 +55,15 @@ std::string Shared::replaceAllMany(
 }
 
 std::string Shared::trim(const std::string &text) {
-    std::string resutl;
+    if (text.empty()) return text;
+
+    size_t posComment = text.find(';');
+    bool existComment = (posComment != std::string::npos);
+
+    int end = existComment? posComment : text.size();
     int start = 0;
-    int end = text.size();
-    while (text[start] == ' ') start++;
-    while (text[end] == ' ') end--;
-    return text.substr(start, end);
+    
+    while (start < end && text[start] == ' ') start++;
+    while (start < end && text[end] == ' ') end--;
+    return text.substr(start, end - start);
 }

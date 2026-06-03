@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 #include "vm/vm.h"
 
 class MacroInstruction
@@ -41,6 +42,7 @@ public:
   // std::string expandMacro(MacroInstruction instruction, std::vector<uint8_t> args);
 
 private:
-  std::vector<MacroInstruction> macroInstructions;
+  //std::vector<MacroInstruction> macroInstructions;
+  std::unordered_map<std::string, MacroInstruction> macroInstructions ;
 };
 

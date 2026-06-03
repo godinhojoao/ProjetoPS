@@ -36,12 +36,26 @@ void MacroProcessor::findAndStoreMacros(std::string file)
   // 1. reading line by line and processing without holding entire file content
   std::string line;
   bool isReadingMacro = false;
+  bool hasFinishedMacroRead = false;
   MacroInstruction instruction;
-  MACRO_READING_STATE currReadingState = LABEL;
+  MACRO_READING_STATE currMacroReadingState = LABEL;
 
   while (std::getline(inFile, line))
   {
-    std::cout << "line->" << line << "\n";
+    std::cout << "line->" << line <<"\n";
+    
+    if (line.size() == 0) {
+  
+      continue;
+    }
+
+    if (!isReadingMacro && line.find(".endm") == 0) {
+      throw std::runtime_error("Nao pode fechar macro que nao foi aberta");
+    }
+
+    if (hasFinishedMacroRead && line.find(".macro") == 0) {
+      throw std::runtime_error("Nao pode ler macro");
+    }
 
     if (line.find(".macro") == 0 && !isReadingMacro)
     {
@@ -51,18 +65,18 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       for (int i = 0; i < splittedResult.size(); ++i)
       {
         std::string currChunk = splittedResult[i];
-        if (currReadingState == LABEL && i == 1)
+        if (currMacroReadingState == LABEL && i == 1)
         {
           instruction.setLabel(currChunk);
-          currReadingState = PARAM;
+          currMacroReadingState = PARAM;
           continue;
         }
 
-        if (currReadingState == PARAM)
+        if (currMacroReadingState == PARAM)
         {
           bool isLastParam = i == splittedResult.size() - 1;
           instruction.pushParam(isLastParam ? currChunk : currChunk.substr(0, currChunk.size() - 1));
-          currReadingState = isLastParam ? CODE : PARAM;
+          currMacroReadingState = isLastParam ? CODE : PARAM;
           continue;
         }
       }
@@ -73,28 +87,35 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     if (line.find(".endm") == 0 && isReadingMacro)
     {
       isReadingMacro = false;
-      this->macroInstructions.push_back(instruction);
+      this->macroInstructions.emplace(instruction.getLabel(), instruction);
       instruction = MacroInstruction{};
-      currReadingState = LABEL;
+      currMacroReadingState = LABEL;
       continue;
     }
 
-    if (currReadingState == CODE)
+    if (currMacroReadingState == CODE)
     {
       instruction.appendCode(line);
     }
+
+    hasFinishedMacroRead = !isReadingMacro && line.find(".macro") != 0;
   }
 
   // debug
-  for (int i = 0; i < this->macroInstructions.size(); ++i)
-  {
-    std::cout << "label->" << this->macroInstructions[i].getLabel() << "\n";
-    for (int j = 0; j < this->macroInstructions[i].getParams().size(); ++j)
-    {
-      std::cout << "params->" << this->macroInstructions[i].getParams()[j] << "\n";
+  for (const auto &entry : this->macroInstructions) {
+    const MacroInstruction &macro = entry.second;
+    std::cout << "-------------------\n";
+
+    std::cout << "label-> " << macro.getLabel() << "\n";
+
+    for (const auto &param : macro.getParams()) {
+      std::cout << "params-> " << param << "\n";
     }
-    std::cout << "code->" << this->macroInstructions[i].getCode() << "\n";
+
+    std::cout << "code-> " << macro.getCode() << "\n";
+    std::cout << "-------------------\n";
   }
+
   inFile.close();
 }
 

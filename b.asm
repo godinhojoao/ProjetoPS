@@ -16,6 +16,7 @@
 
 NOP
 NOP
+.macro
 ADD_VALS 0x05, 0x05
 ADD_VALS2 0x03, 0x03
 NOP

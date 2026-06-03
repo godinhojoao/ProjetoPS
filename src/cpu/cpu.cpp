@@ -29,7 +29,9 @@ bool CPU::cycle(const Instruction& inst, Memory& mem)
       return false;
 
     case OpcodeType::PUSH_RP: {
-      auto [hi, lo] = getStackRegistersPair(inst.sourceReg);
+      auto regs = getStackRegistersPair(inst.sourceReg);
+      auto hi = regs.first;
+      auto lo = regs.second;
       SP--; // -- because stack start on top of memory and grows toward bottom of mem.
       if (!mem.write(SP, *hi)) {
         std::cout << "CPU: stack overflow\n";
@@ -49,7 +51,9 @@ bool CPU::cycle(const Instruction& inst, Memory& mem)
         std::cout << "CPU: stack underflow\n";
         return false;
       }
-      auto [hi, lo] = getStackRegistersPair(inst.destReg);
+      auto regs = getStackRegistersPair(inst.sourceReg);
+      auto hi = regs.first;
+      auto lo = regs.second;      
       *lo = mem.read(SP);
       SP++;
       // read then sp++ to free the space, memory is not cleaned (trash stays on memory - value of register saved on stack and popped now)

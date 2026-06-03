@@ -2,10 +2,12 @@ CXX = g++
 CXXFLAGS = -std=c++17 -O2 -I src
 
 SRC = src/main.cpp \
+      src/shared/shared.cpp \
       src/vm/vm.cpp \
       src/cpu/cpu.cpp \
       src/instruction_set/decoder.cpp \
       src/loader/binary_loader.cpp \
+      src/macro_processor/macro_processor.cpp \
       src/memory/memory.cpp
 
 OUT = vm

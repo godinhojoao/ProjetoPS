@@ -30,6 +30,10 @@ set(PROJECT_SOURCES
         ../src/vm/vm.h
         ../src/constants.h
         ../src/main_cli.cpp
+        ../src/macro_processor/macro_processor.cpp
+        ../src/macro_processor/macro_processor.h
+        ../src/shared/shared.cpp
+        ../src/shared/shared.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

@@ -1,7 +1,7 @@
 // TODO: faltou só separar melhor o codigo, matar uns ifs, etc
 // se tiver macro com mesmo nome uma definida após a outra, a primeira é sobrescrita
-#include <shared/shared.h>
-#include "macro_processor/macro_processor.h"
+#include "../shared/shared.h"
+#include "../macro_processor/macro_processor.h"
 
 enum MACRO_READING_STATE
 {

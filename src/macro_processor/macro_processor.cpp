@@ -122,5 +122,9 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       }
     }
   }
+
+  if(isReadingMacro) {
+    throw std::runtime_error("abriu macro e nao fechou");
+  }
   inFile.close();
 }

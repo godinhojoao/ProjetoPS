@@ -23,7 +23,8 @@ std::string MacroProcessor::expandMacro(MacroInstruction instruction, std::vecto
     if (existComma) arg.erase(comma);
   }
 
-  return Shared::replaceAllMany( instruction.getCode(), instruction.getParams(), args);
+  std::string macroCode = instruction.getCode();
+  return instructionParams.size() == 0 ? macroCode : Shared::replaceAllMany(macroCode, instructionParams, args);
 }
 
 void MacroProcessor::findAndStoreMacros(std::string file)
@@ -43,7 +44,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
   while (std::getline(inFile, line))
   {
     // validations
-    line = Shared::trim(line);
+    line = Shared::trim(line); // remove comentarios e espacos
     //std::cout << "line->" << line <<"\n";
     if (line.size() == 0) continue;
 
@@ -66,7 +67,8 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         if (currMacroReadingState == LABEL && i == 1)
         {
           instruction.setLabel(currChunk);
-          currMacroReadingState = PARAM;
+          bool hasParams = splittedResult.size() > 2;
+          currMacroReadingState = hasParams ? PARAM : CODE;
           continue;
         }
 

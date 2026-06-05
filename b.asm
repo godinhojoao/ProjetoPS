@@ -1,7 +1,7 @@
-.macro ADD_VALS p1, p2
+.macro ADD_VALS ; comentario
   NOP
-  LD B, p1
-  LD A, p2
+  LD B, 0x05
+  LD A, 0x05
   ADD A, B;comentario
   HALT
 .endm
@@ -13,10 +13,11 @@
   ADD A, B
   HALT
 .endm
+
 ;comentario
 NOP
- NOP
-ADD_VALS 0x05, 0x04;comentario
+NOP
+ADD_VALS;comentario
 ADD_VALS2 0x03, 0x02
 NOP  ;comentario
 HALT

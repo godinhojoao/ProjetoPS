@@ -26,5 +26,7 @@ private:
 
     void openNewFile(const QString &fileName, const QString &content); //função interna pra criar as abas dinamicamente (durante exec)
     void on_treeFiles_doubleClicked(const QModelIndex &index);
+    void closeTab(int index);
+    void onDocumentModified(bool modified);
 };
 #endif // MAINWINDOW_H

@@ -62,24 +62,15 @@
           </property>
           <widget class="QTabWidget" name="tabCodeEditor">
            <property name="currentIndex">
-            <number>0</number>
+            <number>-1</number>
            </property>
-           <widget class="QWidget" name="newFile">
-            <attribute name="title">
-             <string>newFile</string>
-            </attribute>
-            <layout class="QVBoxLayout" name="verticalLayout_2">
-             <item>
-              <widget class="QPlainTextEdit" name="plainTextEdit"/>
-             </item>
-            </layout>
-           </widget>
           </widget>
           <widget class="QPlainTextEdit" name="textErrorLog">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
+          <widget class="QLineEdit" name="commandLine"/>
          </widget>
         </item>
        </layout>

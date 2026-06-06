@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
-//ver oq isso faz
 #include <QDir>
 #include <QHeaderView>
 
@@ -20,12 +19,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->tabCodeEditor, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
 
+    QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
+    connect(saveShortcut, &QShortcut::activated, this, &MainWindow::saveCurrentFile);
 
     modelFiles = new QFileSystemModel(this); //instantica um leitor de arquivos
 
     // Isso aqui pode mudar dps se eu quiser colocar ele pra monitorar uma pasta q o cara selecionar
     // Por enquanto vou fazer ele mostrar a mesma pasta do projeto pra testes
-    QString rootDir = QDir::currentPath();
+    QString rootDir = "/home/lucascacz/ProjectTestQT";
     modelFiles->setRootPath(rootDir);
 
     //Conecta o tree view com o model
@@ -45,9 +46,17 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::openNewFile(const QString &fileName, const QString &content) {
+void MainWindow::openNewFile(const QString &fileName, const QString &content, const QString &filepath) {
     // Cria um editor de texto novo na memória
     QPlainTextEdit *newEditor = new QPlainTextEdit(this); //this define que esse editor de texto pertence a esta (this) janela
+
+    // Isso faz com que todo editor criado a partir de um arquivo contenha o caminho daquele arquivo.
+    newEditor->setProperty(
+        "filepath",
+        filepath
+    );
+
+
     // Um plaintext editor tem um document(), que vai ter algumas coisas interessantes: isModified(), e emite um signal toda vez que é modificado: modificationChanged(bool)
     // conecta o editor de texto instanciado (ele continua vivo na heap dps do fim dessa função, só perdemos o ponteiro, e o connect do signal dele continua ligado internamente)
     connect(newEditor->document(), &QTextDocument::modificationChanged, this, &MainWindow::onDocumentModified);
@@ -93,7 +102,7 @@ void MainWindow::on_treeFiles_doubleClicked(const QModelIndex &index) {
         QString conteudoDoArquivo = fluxoLeitura.readAll(); //lê o arquivo inteiro e guarda numa string
         arquivo.close();
 
-        openNewFile(nomeCurto, conteudoDoArquivo); //abre o arquivo agora no editor de texto (QPlainText)
+        openNewFile(nomeCurto, conteudoDoArquivo, caminhoCompleto); //abre o arquivo agora no editor de texto (QPlainText)
 
     } else {
         //Se deu merda na hora de abrir, escreve no log
@@ -144,7 +153,29 @@ void MainWindow::onDocumentModified(bool modified) {
 
 }
 
+/*
+ * Abre o editor atual, pega o path do arquivo q ele representa, abre uma stream de escrita, escreve o conteudo
+ * do editor dentro desse arquivo (reescreve tudo mesmo) e emite um signal de q agora n foi mais modificado (ta igual disco)
+*/
+void MainWindow::saveCurrentFile() {
+    QPlainTextEdit *editor = qobject_cast<QPlainTextEdit*>(ui->tabCodeEditor->currentWidget());
+    QString path = editor->property("filepath").toString();
+    QFile file(path);
 
+    // Abre arquivo e valida
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        ui->textErrorLog->appendPlainText("Erro, arquivo: " + path + " não pôde ser aberto");
+        return;
+    }
+
+    //Cria stream
+    QTextStream out(&file); //abre uma stream de texto com o file
+    out << editor->toPlainText(); // == getPlainText pra pegar todo conteudo mas c/ nome ruim
+
+    //Fecha e troca estado pra alterar nome ta aba
+    file.close();
+    editor->document()->setModified(false);
+}
 
 
 

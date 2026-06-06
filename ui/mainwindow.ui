@@ -65,12 +65,12 @@
             <number>-1</number>
            </property>
           </widget>
-          <widget class="QPlainTextEdit" name="textErrorLog">
+          <widget class="QPlainTextEdit" name="consoleOutput">
            <property name="readOnly">
             <bool>true</bool>
            </property>
           </widget>
-          <widget class="QLineEdit" name="commandLine"/>
+          <widget class="QLineEdit" name="commandInput"/>
          </widget>
         </item>
        </layout>

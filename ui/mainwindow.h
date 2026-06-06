@@ -30,5 +30,6 @@ private:
     void closeTab(int index);
     void onDocumentModified(bool modified);
     void saveCurrentFile();
+    void onCommandEntered();
 };
 #endif // MAINWINDOW_H

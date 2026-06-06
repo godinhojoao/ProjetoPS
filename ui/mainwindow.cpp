@@ -22,6 +22,9 @@ MainWindow::MainWindow(QWidget *parent)
     QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
     connect(saveShortcut, &QShortcut::activated, this, &MainWindow::saveCurrentFile);
 
+    //Console
+    connect(ui->commandInput, &QLineEdit::returnPressed, this, &MainWindow::onCommandEntered);
+
     modelFiles = new QFileSystemModel(this); //instantica um leitor de arquivos
 
     // Isso aqui pode mudar dps se eu quiser colocar ele pra monitorar uma pasta q o cara selecionar
@@ -106,7 +109,7 @@ void MainWindow::on_treeFiles_doubleClicked(const QModelIndex &index) {
 
     } else {
         //Se deu merda na hora de abrir, escreve no log
-        ui->textErrorLog->appendPlainText("Erro: Não foi possível abrir o arquivo " + nomeCurto);
+        ui->consoleOutput->appendPlainText("Erro: Não foi possível abrir o arquivo " + nomeCurto);
     }
 }
 
@@ -164,7 +167,7 @@ void MainWindow::saveCurrentFile() {
 
     // Abre arquivo e valida
     if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        ui->textErrorLog->appendPlainText("Erro, arquivo: " + path + " não pôde ser aberto");
+        ui->consoleOutput->appendPlainText("Erro, arquivo: " + path + " não pôde ser aberto");
         return;
     }
 
@@ -175,6 +178,48 @@ void MainWindow::saveCurrentFile() {
     //Fecha e troca estado pra alterar nome ta aba
     file.close();
     editor->document()->setModified(false);
+}
+
+void MainWindow::onCommandEntered() {
+    if(ui->commandInput->text().isEmpty()) { return; }
+    // Aqui vai pegar oq ta escrito no console log e fazer o parsing, com base no parsing chamar a funcao responsavel pela logica
+
+    QString line = ui->commandInput->text();
+    QStringList tokens = line.split(" ");
+    QString command = tokens[0];
+
+    // Todos vão funcionar a partir da root pra simplificar a minha vida.
+    // ent o cara foi la e criou src/1.asm, vai ter que mandar esse path pro bag funcionar
+
+    // Agora falta pensar numa lista de comandos q o cara vai querer...
+    /*
+     * help
+     * mkdir
+     * setroot (troca o diretorio da treeview)
+     * save <nome> <path> ?
+     * saveas (nao sei se é necessário, da pra tratar com base nos tokens)
+     * saveall
+     * assemble
+     * execute
+     * step (pra executar passo a passo)
+     * link (nao sei exatamente como funciona, mas pra adicionar arquivos na linkediçao)
+     * se eu tiver com saco, coloca navegacao de diretorio (cd, ls, etc)
+     *      //Da pra botar algo que indica em qual diretório o cara tá se eu for implementar isso
+     */
+
+    //Switch case n aceita QString vamo no if-else mesmo
+    // mas se eu quiser melhorar, da pra fazer isso num map, evita testar trocentos if
+    if (command == "clear") {
+        ui->consoleOutput->clear(); //desnecessário uma funcao só pra isso
+
+
+
+
+    } else if (command == "test") {
+        ui->consoleOutput->appendPlainText("test");
+    }
+
+    ui->commandInput->clear(); //limpa dps q o cara apertou enter
 }
 
 

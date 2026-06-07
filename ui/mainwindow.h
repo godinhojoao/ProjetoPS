@@ -12,6 +12,9 @@ class MainWindow;
 }
 QT_END_NAMESPACE
 
+class Console;
+class Project;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -23,6 +26,9 @@ public:
 private:
     Ui::MainWindow *ui;
 
+    Console *console;
+    Project *project;
+
     QFileSystemModel *modelFiles; //ponteiro pro model que vai ler os arquivos
     QString rootDir = "/home/lucascacz/ProjectTestQT";
 
@@ -32,6 +38,5 @@ private:
     void onDocumentModified(bool modified);
     void saveCurrentFile();
     void onCommandEntered();
-    void createDir(const QStringList &tokens);
 };
 #endif // MAINWINDOW_H

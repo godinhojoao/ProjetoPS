@@ -1,5 +1,7 @@
 #include "mainwindow.h"
 #include "./ui_mainwindow.h"
+#include "Console.h"
+#include "Project.h"
 #include <QDir>
 #include <QHeaderView>
 
@@ -9,6 +11,10 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    project = new Project(rootDir);
+    console = new Console(project, this);
+
     //QObject::connect(QUEM_EMITE, &CLASSE::SINAL, QUEM_ESCUTA, &CLASSE::FUNÇÃO_SLOT);
 
     // Conecta o sinal doubleClicked da treeFiles com a função q fizemos
@@ -24,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     //Console
     connect(ui->commandInput, &QLineEdit::returnPressed, this, &MainWindow::onCommandEntered);
+
+    connect(console, &Console::output, ui->consoleOutput, &QPlainTextEdit::appendPlainText);
+    connect(console, &Console::clearRequested, ui->consoleOutput, &QPlainTextEdit::clear);
+
 
     modelFiles = new QFileSystemModel(this); //instantica um leitor de arquivos
 
@@ -180,70 +190,9 @@ void MainWindow::saveCurrentFile() {
 }
 
 void MainWindow::onCommandEntered() {
-    if(ui->commandInput->text().isEmpty()) { return; }
-    // Aqui vai pegar oq ta escrito no console log e fazer o parsing, com base no parsing chamar a funcao responsavel pela logica
-
     QString line = ui->commandInput->text();
-    QStringList tokens = line.split(" ");
-    QString command = tokens[0];
-
-    // Todos vão funcionar a partir da root pra simplificar a minha vida.
-    // ent o cara foi la e criou src/1.asm, vai ter que mandar esse path pro bag funcionar
-
-    // Agora falta pensar numa lista de comandos q o cara vai querer...
-    /*
-     * help
-     * mkdir <nome> <path>
-     * setroot (troca o diretorio da treeview)
-     * save <nome> <path> ?
-     * saveas (nao sei se é necessário, da pra tratar com base nos tokens)
-     * saveall
-     * assemble
-     * execute
-     * step (pra executar passo a passo)
-     * link (nao sei exatamente como funciona, mas pra adicionar arquivos na linkediçao)
-     * se eu tiver com saco, coloca navegacao de diretorio (cd, ls, etc)
-     *      //Da pra botar algo que indica em qual diretório o cara tá se eu for implementar isso
-     */
-
-    //Switch case n aceita QString vamo no if-else mesmo
-    // mas se eu quiser melhorar, da pra fazer isso num map, evita testar trocentos if
-    if (command == "clear") {
-        ui->consoleOutput->clear(); //desnecessário uma funcao só pra isso
-    } else if (command == "mkdir") {
-        //chama funcao
-        createDir(tokens);
-
-    } else if (command == "test") {
-        ui->consoleOutput->appendPlainText("test");
-    }
-
-    ui->commandInput->clear(); //limpa dps q o cara apertou enter
-}
-
-void MainWindow::createDir(const QStringList &tokens) {
-
-    // mkdir <name> <path>
-    // se informar path e as pastas n existirem, cria tudo
-
-    QDir dir(rootDir); //inicia na root
-    //se nome vazio cria com nome padrao
-    if (tokens.size() < 2) {
-        //cria um direto chamado "new" na root
-        ui->consoleOutput->appendPlainText("Missing operand on command 'mkdir'!");
-        return;
-    } else if (tokens.size() < 3) { // só deu nome e nao path
-        dir.mkdir(tokens[1]);
-        return;
-    } else if (tokens.size() < 4) {
-        QString pathDir = tokens[2] + "/"  +  tokens[1]; //concatena as strings, ex: home/docs + / + nameDir
-        dir.mkpath(pathDir);
-    } else {
-        ui->consoleOutput->appendPlainText("Too many operands on command 'mkdir'!");
-        return;
-    }
-    //se path vazio cria na root
-    return;
+    console->executeCommand(line);
+    ui->commandInput->clear();
 }
 
 

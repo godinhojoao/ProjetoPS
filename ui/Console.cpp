@@ -18,8 +18,13 @@ void Console::executeCommand(const QString &line) {
         emit clearRequested(); //emite sinal
     } else if(command == "mkdir") {
         createDir(tokens);
-    } else {
-        emit output("Missing operand");
+    } /*else if(command == "save") {
+        project
+    }*/
+
+
+    else {
+        emit output("Unknown operand");
     }
 }
 

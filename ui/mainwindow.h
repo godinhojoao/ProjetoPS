@@ -14,7 +14,10 @@ QT_END_NAMESPACE
 
 class Console;
 class Project;
-
+/*
+ * Responsabilidades:
+ * Cuidar dos objetos da própria interface
+ */
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -30,7 +33,7 @@ private:
     Project *project;
 
     QFileSystemModel *modelFiles; //ponteiro pro model que vai ler os arquivos
-    QString rootDir = "/home/lucascacz/ProjectTestQT";
+    // QString rootDir = "/home/lucascacz/ProjectTestQT";
 
     void openNewFile(const QString &fileName, const QString &content, const QString &filepath); //função interna pra criar as abas dinamicamente (durante exec)
     void on_treeFiles_doubleClicked(const QModelIndex &index);

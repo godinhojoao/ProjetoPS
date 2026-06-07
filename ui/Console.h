@@ -23,6 +23,7 @@ public:
 signals:
     void output(const QString &text);
     void clearRequested();
+    void saveFileRequested();
 
 private:
     void createDir(const QStringList &tokens);

@@ -12,7 +12,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    project = new Project(rootDir);
+    project = new Project();
     console = new Console(project, this);
 
     //QObject::connect(QUEM_EMITE, &CLASSE::SINAL, QUEM_ESCUTA, &CLASSE::FUNÇÃO_SLOT);
@@ -28,6 +28,12 @@ MainWindow::MainWindow(QWidget *parent)
     QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
     connect(saveShortcut, &QShortcut::activated, this, &MainWindow::saveCurrentFile);
 
+    //Save current
+    // connect(console, &Console::saveFileRequested, this, &MainWindow::saveCurrentFile);
+    //Save <path>
+
+    //Save all
+
     //Console
     connect(ui->commandInput, &QLineEdit::returnPressed, this, &MainWindow::onCommandEntered);
 
@@ -35,22 +41,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(console, &Console::clearRequested, ui->consoleOutput, &QPlainTextEdit::clear);
 
 
+
     modelFiles = new QFileSystemModel(this); //instantica um leitor de arquivos
 
     // Isso aqui pode mudar dps se eu quiser colocar ele pra monitorar uma pasta q o cara selecionar
     // Por enquanto vou fazer ele mostrar a mesma pasta do projeto pra testes
-    modelFiles->setRootPath(rootDir);
+    modelFiles->setRootPath(project->getRootDir());
 
     //Conecta o tree view com o model
     ui->treeFiles->setModel(modelFiles);
-    ui->treeFiles->setRootIndex(modelFiles->index(rootDir));
+    ui->treeFiles->setRootIndex(modelFiles->index(project->getRootDir()));
 
     //Aqui é só pra deixar bonitinho, como o treeview exibe igual um navegador de pasta (nome/tam/tipo/data) esconde as coluna q a gente n quer
     ui->treeFiles->hideColumn(1); //esconde tamanho
     ui->treeFiles->hideColumn(2); //esconde tipo
     ui->treeFiles->hideColumn(3); //esconde data
     ui->treeFiles->header()->hide(); //esconde o header
-
 }
 
 MainWindow::~MainWindow()
@@ -172,20 +178,11 @@ void MainWindow::onDocumentModified(bool modified) {
 void MainWindow::saveCurrentFile() {
     QPlainTextEdit *editor = qobject_cast<QPlainTextEdit*>(ui->tabCodeEditor->currentWidget());
     QString path = editor->property("filepath").toString();
-    QFile file(path);
 
-    // Abre arquivo e valida
-    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-        ui->consoleOutput->appendPlainText("Erro, arquivo: " + path + " não pôde ser aberto");
-        return;
+    // Se deu merda na hora de salvar imprime
+    if(!project->saveFile(path, editor->toPlainText())){
+        ui->consoleOutput->appendPlainText("Erro durante salvamento do arquivo");
     }
-
-    //Cria stream
-    QTextStream out(&file); //abre uma stream de texto com o file
-    out << editor->toPlainText(); // == getPlainText pra pegar todo conteudo mas c/ nome ruim
-
-    //Fecha e troca estado pra alterar nome ta aba
-    file.close();
     editor->document()->setModified(false);
 }
 

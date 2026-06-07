@@ -1,8 +1,7 @@
 #include "Project.h"
 #include <QDir>
 
-Project::Project(const QString &rootDir)
-    : rootDir(rootDir) {
+Project::Project() {
 }
 
 QString Project::getRootDir() const {
@@ -17,4 +16,20 @@ bool Project::createDirectory(const QString &name, const QString &path) {
     }
 
     return dir.mkpath(path + "/" + name);
+}
+
+bool Project::saveFile(const QString &filepath, const QString &content) {
+    QFile file(filepath);
+
+    // Abre arquivo e valida
+    if(!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        return false;
+    }
+
+    //Cria stream
+    QTextStream out(&file); //abre uma stream de texto com o file
+    out << content; // == getPlainText pra pegar todo conteudo mas c/ nome ruim
+    file.close();
+
+    return true;
 }

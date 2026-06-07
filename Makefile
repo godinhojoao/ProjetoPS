@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -O2 -I src
 
-SRC = src/main.cpp \
+SRC = src/main_cli.cpp \
       src/shared/shared.cpp \
       src/vm/vm.cpp \
       src/cpu/cpu.cpp \

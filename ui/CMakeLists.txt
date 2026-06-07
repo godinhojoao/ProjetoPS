@@ -29,7 +29,7 @@ set(PROJECT_SOURCES
         ../src/vm/vm.cpp
         ../src/vm/vm.h
         ../src/constants.h
-        ../src/main_cli.cpp
+        # ../src/main_cli.cpp
         ../src/macro_processor/macro_processor.cpp
         ../src/macro_processor/macro_processor.h
         ../src/shared/shared.cpp

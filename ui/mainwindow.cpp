@@ -29,7 +29,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Isso aqui pode mudar dps se eu quiser colocar ele pra monitorar uma pasta q o cara selecionar
     // Por enquanto vou fazer ele mostrar a mesma pasta do projeto pra testes
-    QString rootDir = "/home/lucascacz/ProjectTestQT";
     modelFiles->setRootPath(rootDir);
 
     //Conecta o tree view com o model
@@ -194,7 +193,7 @@ void MainWindow::onCommandEntered() {
     // Agora falta pensar numa lista de comandos q o cara vai querer...
     /*
      * help
-     * mkdir
+     * mkdir <nome> <path>
      * setroot (troca o diretorio da treeview)
      * save <nome> <path> ?
      * saveas (nao sei se é necessário, da pra tratar com base nos tokens)
@@ -211,9 +210,9 @@ void MainWindow::onCommandEntered() {
     // mas se eu quiser melhorar, da pra fazer isso num map, evita testar trocentos if
     if (command == "clear") {
         ui->consoleOutput->clear(); //desnecessário uma funcao só pra isso
-
-
-
+    } else if (command == "mkdir") {
+        //chama funcao
+        createDir(tokens);
 
     } else if (command == "test") {
         ui->consoleOutput->appendPlainText("test");
@@ -222,6 +221,30 @@ void MainWindow::onCommandEntered() {
     ui->commandInput->clear(); //limpa dps q o cara apertou enter
 }
 
+void MainWindow::createDir(const QStringList &tokens) {
+
+    // mkdir <name> <path>
+    // se informar path e as pastas n existirem, cria tudo
+
+    QDir dir(rootDir); //inicia na root
+    //se nome vazio cria com nome padrao
+    if (tokens.size() < 2) {
+        //cria um direto chamado "new" na root
+        ui->consoleOutput->appendPlainText("Missing operand on command 'mkdir'!");
+        return;
+    } else if (tokens.size() < 3) { // só deu nome e nao path
+        dir.mkdir(tokens[1]);
+        return;
+    } else if (tokens.size() < 4) {
+        QString pathDir = tokens[2] + "/"  +  tokens[1]; //concatena as strings, ex: home/docs + / + nameDir
+        dir.mkpath(pathDir);
+    } else {
+        ui->consoleOutput->appendPlainText("Too many operands on command 'mkdir'!");
+        return;
+    }
+    //se path vazio cria na root
+    return;
+}
 
 
 

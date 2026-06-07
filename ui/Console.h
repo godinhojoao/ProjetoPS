@@ -6,7 +6,12 @@
 #include <QStringList>
 
 class Project;
-
+/*
+ * Responsabilidades:
+ * receber comandos
+ * tratar comandos
+ * chamar lógica associada
+ */
 class Console : public QObject {
     Q_OBJECT //qq essa linha faz?
 

@@ -25,6 +25,15 @@ uint8_t *CPU::getRegister8(uint8_t code)
   return regs[code];
 }
 
+void CPU::setFlagMask(uint8_t mask, bool set)
+{
+  if (set) {
+    F |= mask;
+  } else {
+    F &= ~mask;
+  }
+}
+
 // return true = keep running, false = stop (invalid instruction or halt)
 bool CPU::cycle(const Instruction &inst, Memory &mem)
 {
@@ -32,6 +41,153 @@ bool CPU::cycle(const Instruction &inst, Memory &mem)
   {
   case OpcodeType::HALT:
     return false;
+
+  case OpcodeType::NOP:
+    break;
+
+  case OpcodeType::ADD_A_R:
+  {
+    uint8_t val;
+    if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+        val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+    } else {
+        val = *getRegister8(inst.sourceReg);
+    }
+    
+    uint16_t sum = A + val;
+    uint8_t result = static_cast<uint8_t>(sum);
+    
+    setFlagMask(FLAG_S, (result & 0x80) != 0);
+    setFlagMask(FLAG_Z, result == 0);
+    setFlagMask(FLAG_H, ((A & 0x0F) + (val & 0x0F)) > 0x0F);
+    setFlagMask(FLAG_PV, (~(A ^ val) & (A ^ result) & 0x80) != 0);
+    setFlagMask(FLAG_N, false);
+    setFlagMask(FLAG_C, sum > 0xFF);
+    
+    A = result;
+    break;
+  }
+
+  case OpcodeType::SUB_R:
+  case OpcodeType::CP_R:
+  {
+    uint8_t val;
+    if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+        val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+    } else {
+        val = *getRegister8(inst.sourceReg);
+    }
+    
+    uint16_t diff = A - val;
+    uint8_t result = static_cast<uint8_t>(diff);
+    
+    setFlagMask(FLAG_S, (result & 0x80) != 0);
+    setFlagMask(FLAG_Z, result == 0);
+    setFlagMask(FLAG_H, (A & 0x0F) < (val & 0x0F));
+    setFlagMask(FLAG_PV, ((A ^ val) & (A ^ result) & 0x80) != 0);
+    setFlagMask(FLAG_N, true);
+    setFlagMask(FLAG_C, A < val);
+    
+    if (inst.type == OpcodeType::SUB_R) {
+        A = result;
+    }
+    break;
+  }
+
+  case OpcodeType::INC_R:
+  {
+    uint8_t val;
+    uint16_t hl = 0;
+    bool isHL = (inst.destReg == static_cast<uint8_t>(Register::HL_INDIRECT));
+    
+    if (isHL) {
+        hl = (static_cast<uint16_t>(H) << 8) | L;
+        val = mem.read(hl);
+    } else {
+        val = *getRegister8(inst.destReg);
+    }
+    
+    uint8_t result = val + 1;
+    
+    setFlagMask(FLAG_S, (result & 0x80) != 0);
+    setFlagMask(FLAG_Z, result == 0);
+    setFlagMask(FLAG_H, (val & 0x0F) == 0x0F);
+    setFlagMask(FLAG_PV, val == 0x7F);
+    setFlagMask(FLAG_N, false);
+    
+    if (isHL) {
+        mem.write(hl, result);
+    } else {
+        *getRegister8(inst.destReg) = result;
+    }
+    break;
+  }
+
+  case OpcodeType::DEC_R:
+  {
+    uint8_t val;
+    uint16_t hl = 0;
+    bool isHL = (inst.destReg == static_cast<uint8_t>(Register::HL_INDIRECT));
+    
+    if (isHL) {
+        hl = (static_cast<uint16_t>(H) << 8) | L;
+        val = mem.read(hl);
+    } else {
+        val = *getRegister8(inst.destReg);
+    }
+    
+    uint8_t result = val - 1;
+    
+    setFlagMask(FLAG_S, (result & 0x80) != 0);
+    setFlagMask(FLAG_Z, result == 0);
+    setFlagMask(FLAG_H, (val & 0x0F) == 0x00);
+    setFlagMask(FLAG_PV, val == 0x80);
+    setFlagMask(FLAG_N, true);
+    
+    if (isHL) {
+        mem.write(hl, result);
+    } else {
+        *getRegister8(inst.destReg) = result;
+    }
+    break;
+  }
+
+  case OpcodeType::AND_R:
+  case OpcodeType::OR_R:
+  case OpcodeType::XOR_R:
+  {
+    uint8_t val;
+    if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+        val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+    } else {
+        val = *getRegister8(inst.sourceReg);
+    }
+    
+    if (inst.type == OpcodeType::AND_R) {
+        A &= val;
+        setFlagMask(FLAG_H, true); // Z80 behavior: AND sets H
+    } else if (inst.type == OpcodeType::OR_R) {
+        A |= val;
+        setFlagMask(FLAG_H, false);
+    } else {
+        A ^= val;
+        setFlagMask(FLAG_H, false);
+    }
+    
+    setFlagMask(FLAG_S, (A & 0x80) != 0);
+    setFlagMask(FLAG_Z, A == 0);
+    
+    // P/V on logic indicates parity (1 = even, 0 = odd)
+    uint8_t p = A;
+    p ^= p >> 4;
+    p ^= p >> 2;
+    p ^= p >> 1;
+    setFlagMask(FLAG_PV, !(p & 1));
+    
+    setFlagMask(FLAG_N, false);
+    setFlagMask(FLAG_C, false);
+    break;
+  }
 
   // LD r, r' - Copia o valor de um registrador para o outro
   case OpcodeType::LD_R_R:

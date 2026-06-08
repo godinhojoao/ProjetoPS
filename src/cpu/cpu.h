@@ -15,6 +15,7 @@ public:
 private:
   uint8_t A = 0, B = 0, C = 0, D = 0, E = 0, H = 0, L = 0;
   uint8_t F = 0;
+  uint16_t PC = 0;
   uint16_t SP = VM_MEMORY_IN_BYTES - 1; // start on top of memory
   std::pair<uint8_t*, uint8_t*> getStackRegistersPair(uint8_t code); // (BC/DE/HL/AF)
   
@@ -25,4 +26,14 @@ private:
    * @return       Ponteiro para a variável interna do registrador
    */
   uint8_t* getRegister8(uint8_t code);
+
+  // Máscaras para a flag F
+  static constexpr uint8_t FLAG_C  = 1 << 0; // Carry
+  static constexpr uint8_t FLAG_N  = 1 << 1; // Add/Subtract
+  static constexpr uint8_t FLAG_PV = 1 << 2; // Parity/Overflow
+  static constexpr uint8_t FLAG_H  = 1 << 4; // Half Carry
+  static constexpr uint8_t FLAG_Z  = 1 << 6; // Zero
+  static constexpr uint8_t FLAG_S  = 1 << 7; // Sign
+
+  void setFlagMask(uint8_t mask, bool set);
 };

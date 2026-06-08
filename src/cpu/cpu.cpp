@@ -18,6 +18,13 @@ std::pair<uint8_t *, uint8_t *> CPU::getStackRegistersPair(uint8_t code)
   return {hi[code], lo[code]};
 }
 
+uint8_t *CPU::getRegister8(uint8_t code)
+{
+  // 0: B, 1: C, 2: D, 3: E, 4: H, 5: L, 6: (HL - não usado aqui), 7: A
+  uint8_t *regs[] = {&B, &C, &D, &E, &H, &L, nullptr, &A};
+  return regs[code];
+}
+
 // return true = keep running, false = stop (invalid instruction or halt)
 bool CPU::cycle(const Instruction &inst, Memory &mem)
 {
@@ -25,6 +32,54 @@ bool CPU::cycle(const Instruction &inst, Memory &mem)
   {
   case OpcodeType::HALT:
     return false;
+
+  // LD r, r' - Copia o valor de um registrador para o outro
+  case OpcodeType::LD_R_R:
+    *getRegister8(inst.destReg) = *getRegister8(inst.sourceReg);
+    break;
+
+  // LD r, n - Copia um valor imediato de 8 bits para o registrador
+  case OpcodeType::LD_R_N:
+  {
+    // Verifica se é o endereço na memória pontado por HL (código 6)
+    if (inst.destReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+        uint16_t hl = (static_cast<uint16_t>(H) << 8) | L;
+        
+        if (!mem.write(hl, static_cast<uint8_t>(inst.operand & 0xFF))) {
+            std::cout << "CPU: memory write error at (HL) on LD (HL), n\n";
+            return false;
+        }
+    } else {
+        *getRegister8(inst.destReg) = static_cast<uint8_t>(inst.operand & 0xFF);
+    }
+    
+    break;
+  }
+
+  // LD (HL), r - Escreve na memória o valor do registrador
+  case OpcodeType::LD_HL_R:
+  {
+    // Forma o endereço combinando H (parte alta) e L (parte baixa)
+    uint16_t hl = (static_cast<uint16_t>(H) << 8) | L;
+    
+    if (!mem.write(hl, *getRegister8(inst.sourceReg))) {
+        std::cout << "CPU: memory write error at (HL)\n";
+        return false;
+    }
+    
+    break;
+  }
+
+  // LD r, (HL) - Lê da memória e salva no registrador
+  case OpcodeType::LD_R_HL:
+  {
+    // Forma o endereço combinando H (parte alta) e L (parte baixa)
+    uint16_t hl = (static_cast<uint16_t>(H) << 8) | L;
+    
+    *getRegister8(inst.destReg) = mem.read(hl);
+    
+    break;
+  }
 
   case OpcodeType::PUSH_RP:
   {

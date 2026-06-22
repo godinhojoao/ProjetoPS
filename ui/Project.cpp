@@ -29,7 +29,51 @@ bool Project::createDirectory(const QString &input) {
     return QDir().mkpath(path);
 }
 
-bool Project::saveFile(const QString &filepath, const QString &content) {
+bool Project::deleteDirectory(const QString &input) {
+    QString path = resolvePath(input);
+
+    // Não da pra deletar algo inexistente ou a root
+    if (path.isEmpty() || path == rootDir) {
+        return false;
+    }
+
+    return QDir(path).removeRecursively(); //apaga absolutamente tudo dentro daquele path
+}
+
+bool Project::touch(const QString &input) {
+    QString path = resolvePath(input);
+    if (path.isEmpty()) { return false; }
+
+    QFile file(path);
+    return file.open(QIODevice::WriteOnly); //fecha sozinho no destrutor
+}
+
+bool Project::remove(const QString &input) {
+    QString path = resolvePath(input);
+    if(path.isEmpty()) { return false; }
+
+    QFile file(path);
+    return file.remove();
+}
+
+bool Project::assemble(const QStringList &input) {
+    return false;
+}
+
+bool Project::link(const QStringList &input) {
+    return false;
+}
+
+bool Project::build(const QStringList &input) {
+    return false;
+}
+
+bool Project::run(const QString &input) {
+    return false;
+}
+
+
+bool Project::saveFileShortcut(const QString &filepath, const QString &content) {
     QFile file(filepath);
 
     // Abre arquivo e valida
@@ -43,15 +87,4 @@ bool Project::saveFile(const QString &filepath, const QString &content) {
     file.close();
 
     return true;
-}
-
-bool Project::deleteDirectory(const QString &input) {
-    QString path = resolvePath(input);
-
-    // Não da pra deletar algo inexistente ou a root
-    if (path.isEmpty() || path == rootDir) {
-        return false;
-    }
-
-    return QDir(path).removeRecursively(); //apaga absolutamente tudo dentro daquele path
 }

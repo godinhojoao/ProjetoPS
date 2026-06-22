@@ -16,18 +16,27 @@ void Console::executeCommand(const QString &line) {
 
     if(command == "clear") {
         emit clearRequested(); //emite sinal
+    } else if(command == "help") {
+        emit output(helpText);
     } else if(command == "mkdir") {
         createDir(tokens);
     } else if(command == "rmdir") {
         deleteDir(tokens);
-    }
+    } else if(command == "touch") {
+        touch(tokens);
+    } else if(command == "rm") {
+        rm(tokens);
+    } else if(command == "save") {
+        save(tokens);
+    } else if(command == "assemble") {
 
-    /*else if(command == "save") {
-        project
-    }*/
+    } else if(command == "link") {
 
+    } else if(command == "run") {
 
-    else {
+    } else if(command == "build") {
+
+    } else {
         emit output("Unknown operand");
     }
 }
@@ -67,11 +76,101 @@ void Console::deleteDir(const QStringList &tokens) {
 
 }
 
+void Console::touch(const QStringList &tokens) {
+    //touch <path>
+    // se path vier vazio considera a root
+    if (tokens.size() < 2) {
+        emit output("missing operand on touch");
+        return;
+    }
 
+    QString path = tokens[1];
 
+    bool success = project->touch(path);
+    if (!success) {
+        emit output("Failed to create file");
+    }
+}
 
+void Console::rm(const QStringList &tokens) {
+    //rm <path>
+    if (tokens.size() < 2) {
+        emit output("missing operand on rm");
+        return;
+    }
 
+    QString path = tokens[1];
+    bool success = project->remove(path);
+    if(!success) {
+        emit output("failed to remove file");
+    }
+}
 
+void Console::save(const QStringList &tokens) {
+    //save <path>
+    if(tokens.size() < 2) {
+        emit output("missing operand on save");
+        return;
+    }
+
+    QString path = project->resolvePath(tokens[1]);
+    if(path.isEmpty()) {
+        emit output("invalid path");
+        return;
+    }
+    emit saveFileRequested(path);
+}
+
+void Console::assemble(const QStringList &tokens) {
+    // assemble <f1> <f2> ...
+    if(tokens.size() < 2) {
+        emit output("missing operand on assemble");
+        return;
+    }
+
+    bool success = project->assemble(tokens.mid(1));
+    if(!success) {
+        emit output("Failed to assemble files");
+    }
+}
+
+void Console::link(const QStringList &tokens) {
+    // link <f1> <f2> ...
+    if(tokens.size() < 2) {
+        emit output("missing operand on link");
+        return;
+    }
+
+    bool success = project->link(tokens.mid(1));
+    if(!success) {
+        emit output("Failed to link files");
+    }
+}
+
+void Console::run(const QStringList &tokens) {
+    //run <path>
+    if(tokens.size() < 2) {
+        emit output("missing operand on run");
+        return;
+    }
+
+    bool success = project->run(tokens[1]);
+    if(!success) {
+        emit output("Failed to run .exe file");
+    }
+}
+
+void Console::build(const QStringList &tokens) {
+    if(tokens.size() < 2) {
+        emit output("missing operand on build");
+        return;
+    }
+
+    bool success = project->build(tokens.mid(1));
+    if(!success) {
+        emit output("Failed to build(assemble and link) files");
+    }
+}
 
 
 

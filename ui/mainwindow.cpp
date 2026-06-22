@@ -28,11 +28,8 @@ MainWindow::MainWindow(QWidget *parent)
     QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
     connect(saveShortcut, &QShortcut::activated, this, &MainWindow::saveCurrentFile);
 
-    //Save current
-    // connect(console, &Console::saveFileRequested, this, &MainWindow::saveCurrentFile);
     //Save <path>
-
-    //Save all
+    connect(console, &Console::saveFileRequested, this, &MainWindow::saveFile);
 
     //Console
     connect(ui->commandInput, &QLineEdit::returnPressed, this, &MainWindow::onCommandEntered);
@@ -180,10 +177,25 @@ void MainWindow::saveCurrentFile() {
     QString path = editor->property("filepath").toString();
 
     // Se deu merda na hora de salvar imprime
-    if(!project->saveFile(path, editor->toPlainText())){
+    if(!project->saveFileShortcut(path, editor->toPlainText())){
         ui->consoleOutput->appendPlainText("Erro durante salvamento do arquivo");
     }
     editor->document()->setModified(false);
+}
+
+// percorre tabs, acha oq tem filepath igual e salva.
+// horrivel melhor usar o ctrl+s, mas se o puto quiser tem.
+void MainWindow::saveFile(const QString &path) {
+    for (int i = 0; i < ui->tabCodeEditor->count(); i++) {
+        QPlainTextEdit *editor = qobject_cast<QPlainTextEdit*>(ui->tabCodeEditor->widget(i));
+        if (editor && editor->property("filepath").toString() == path) {
+            if (!project->saveFileShortcut(path, editor->toPlainText())) {
+                ui->consoleOutput->appendPlainText("Erro durante salvamento do arquivo");
+            }
+            editor->document()->setModified(false);
+            return;
+        }
+    }
 }
 
 void MainWindow::onCommandEntered() {

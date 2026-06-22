@@ -40,6 +40,7 @@ private:
     void closeTab(int index);
     void onDocumentModified(bool modified);
     void saveCurrentFile();
+    void saveFile(const QString &path);
     void onCommandEntered();
 };
 #endif // MAINWINDOW_H

@@ -17,8 +17,18 @@ public:
     QString resolvePath(const QString &input);
     bool createDirectory(const QString &input);
     bool deleteDirectory(const QString &input);
+    bool touch(const QString &input);
+    bool remove(const QString &input);
+    bool assemble(const QStringList &input);
+    bool link(const QStringList &input);
+    bool build(const QStringList &input);
+    bool run(const QString &input);
+
+    // bool saveFile(const QString &input);
+
+    bool saveFileShortcut(const QString &filepath, const QString &content);
+
     QString getRootDir() const;
-    bool saveFile(const QString &filepath, const QString &content);
 
 
 private:

@@ -27,6 +27,7 @@ signals:
 
 private:
     void createDir(const QStringList &tokens);
+    void deleteDir(const QStringList &tokens);
     Project *project;
 
 

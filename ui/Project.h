@@ -14,9 +14,12 @@ class Project
 {
 public:
     Project();
-    bool createDirectory(const QString &name, const QString &path = "");
+    QString resolvePath(const QString &input);
+    bool createDirectory(const QString &input);
+    bool deleteDirectory(const QString &input);
     QString getRootDir() const;
     bool saveFile(const QString &filepath, const QString &content);
+
 
 private:
     QString rootDir = "/home/lucascacz/ProjectTestQT";

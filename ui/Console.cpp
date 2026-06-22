@@ -18,7 +18,11 @@ void Console::executeCommand(const QString &line) {
         emit clearRequested(); //emite sinal
     } else if(command == "mkdir") {
         createDir(tokens);
-    } /*else if(command == "save") {
+    } else if(command == "rmdir") {
+        deleteDir(tokens);
+    }
+
+    /*else if(command == "save") {
         project
     }*/
 
@@ -34,14 +38,10 @@ void Console::createDir(const QStringList &tokens) {
         return;
     }
 
-    QString name = tokens[1];
-    QString path = ""; //por padrao vem vazio
-
-    if(tokens.size() >= 3) { //se o cara digitou path
-        path = tokens[2];
-    }
-
-    bool success = project->createDirectory(name, path);
+    // espera receber mkdir "path"
+    // path sempre inclui a root, mas fica abstraido pro usuario
+    QString path = tokens [1];
+    bool success = project->createDirectory(path);
 
     if(success) {
         emit output("Directory created");
@@ -49,3 +49,42 @@ void Console::createDir(const QStringList &tokens) {
         emit output("Failed to create directory");
     }
 }
+
+void Console::deleteDir(const QStringList &tokens) {
+    if(tokens.size() < 2) {
+        emit output("Missing operand on rmdir");
+        return;
+    }
+
+    QString path = tokens[1];
+    bool success = project->deleteDirectory(path);
+
+    if(success) {
+        emit output("Directory deleted.");
+    } else {
+        emit output("Failed to delete directory.");
+    }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

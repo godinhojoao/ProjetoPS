@@ -68,10 +68,15 @@ bool Project::build(const QStringList &input) {
     return false;
 }
 
-bool Project::run(const QString &input) {
-    return false;
-}
+bool Project::run(const QString &binPath) {
+    QString path = resolvePath(binPath);
+    if(!vm.load(path.toStdString())) return false;
 
+    vm.run();
+    emit flagsAndReg_Modified(vm.getState());
+
+    return true;
+}
 
 bool Project::saveFileShortcut(const QString &filepath, const QString &content) {
     QFile file(filepath);

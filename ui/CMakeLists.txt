@@ -42,6 +42,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ${PROJECT_SOURCES}
         Console.h Console.cpp
         Project.h Project.cpp
+        vmstate.h
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
@@ -60,6 +61,8 @@ else()
         )
     endif()
 endif()
+
+target_include_directories(ui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
 
 target_link_libraries(ui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 

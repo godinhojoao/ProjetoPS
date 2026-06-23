@@ -18,6 +18,14 @@ std::pair<uint8_t *, uint8_t *> CPU::getStackRegistersPair(uint8_t code)
   return {hi[code], lo[code]};
 }
 
+bool CPU::getFlag(uint8_t mask) const {
+    return (F & mask) != 0;
+}
+
+CPUState CPU::getState() const {
+    return { A, B, C, D, E, H, L, F, PC, SP };
+}
+
 uint8_t *CPU::getRegister8(uint8_t code)
 {
   // 0: B, 1: C, 2: D, 3: E, 4: H, 5: L, 6: (HL - não usado aqui), 7: A

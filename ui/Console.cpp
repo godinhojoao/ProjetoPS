@@ -33,7 +33,7 @@ void Console::executeCommand(const QString &line) {
     } else if(command == "link") {
 
     } else if(command == "run") {
-
+        run(tokens);
     } else if(command == "build") {
 
     } else {

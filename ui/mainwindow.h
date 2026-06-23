@@ -5,6 +5,7 @@
 #include <QFileSystemModel>
 #include <QPlainTextEdit>
 #include <QShortcut>
+#include "vmstate.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -42,5 +43,9 @@ private:
     void saveCurrentFile();
     void saveFile(const QString &path);
     void onCommandEntered();
+    void onRunClicked();
+    void onStepClicked();
+    void onResetClicked();
+    void updateRegFlagTable(const VMState &state);
 };
 #endif // MAINWINDOW_H

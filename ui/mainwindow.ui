@@ -14,8 +14,8 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="0" column="0">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
      <widget class="QSplitter" name="splitterScreen">
       <property name="orientation">
        <enum>Qt::Orientation::Horizontal</enum>
@@ -33,16 +33,16 @@
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnAssemble">
+           <widget class="QPushButton" name="btnStep">
             <property name="text">
-             <string>Assemble</string>
+             <string>Step</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QPushButton" name="btnStep">
+           <widget class="QPushButton" name="btnReset">
             <property name="text">
-             <string>Step</string>
+             <string>Reset</string>
             </property>
            </widget>
           </item>
@@ -79,6 +79,17 @@
         <attribute name="title">
          <string>Tab 1</string>
         </attribute>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QSplitter" name="splitter">
+           <property name="orientation">
+            <enum>Qt::Orientation::Vertical</enum>
+           </property>
+           <widget class="QTableWidget" name="tableRegs"/>
+           <widget class="QTableWidget" name="tableFlags"/>
+          </widget>
+         </item>
+        </layout>
        </widget>
        <widget class="QWidget" name="Assembler">
         <attribute name="title">

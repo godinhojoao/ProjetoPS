@@ -12,48 +12,93 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-    project = new Project();
-    console = new Console(project, this);
-
-    //QObject::connect(QUEM_EMITE, &CLASSE::SINAL, QUEM_ESCUTA, &CLASSE::FUNÇÃO_SLOT);
-
-    // Conecta o sinal doubleClicked da treeFiles com a função q fizemos
-    connect(ui->treeFiles, &QTreeView::doubleClicked, this, &MainWindow::on_treeFiles_doubleClicked);
+    project = new Project();              // classe q controla o backend (controller)
+    console = new Console(project, this); // classe q controla o console
 
     ui->tabCodeEditor->setTabsClosable(true); //habilita o btn 'X' com signal nas abas do tabCodeEditor
-    // nome do signal: tabCloseRequested(int index); index é a tab que foi clicada
+    QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this); //cria um shortcut Ctrl+S
 
-    connect(ui->tabCodeEditor, &QTabWidget::tabCloseRequested, this, &MainWindow::closeTab);
+    ui->tabShowData->setTabText(0, "Registradores e Flags");
+    ui->tabShowData->setTabText(1, "Assembler");
+    ui->tabShowData->setTabText(2, "Linker");
 
-    QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this);
-    connect(saveShortcut, &QShortcut::activated, this, &MainWindow::saveCurrentFile);
+    // ---------------------------------------------------
+    // Conexões entre Signals/Slots
+    // ---------------------------------------------------
+    //connect(QUEM_EMITE,       &CLASSE::SINAL,                 QUEM_ESCUTA,        &CLASSE::FUNÇÃO_SLOT);
 
-    //Save <path>
-    connect(console, &Console::saveFileRequested, this, &MainWindow::saveFile);
+    connect(ui->treeFiles,      &QTreeView::doubleClicked,      this,               &MainWindow::on_treeFiles_doubleClicked);
+    connect(ui->tabCodeEditor,  &QTabWidget::tabCloseRequested, this,               &MainWindow::closeTab);
+    connect(saveShortcut,       &QShortcut::activated,          this,               &MainWindow::saveCurrentFile);
+    connect(console,            &Console::saveFileRequested,    this,               &MainWindow::saveFile);//Save <path>
+    connect(ui->commandInput,   &QLineEdit::returnPressed,      this,               &MainWindow::onCommandEntered);
+    connect(console,            &Console::output,               ui->consoleOutput,  &QPlainTextEdit::appendPlainText);
+    connect(console,            &Console::clearRequested,       ui->consoleOutput,  &QPlainTextEdit::clear);
 
-    //Console
-    connect(ui->commandInput, &QLineEdit::returnPressed, this, &MainWindow::onCommandEntered);
+    connect(ui->btnRun,         &QPushButton::clicked,          this,               &MainWindow::onRunClicked);
+    connect(ui->btnStep,        &QPushButton::clicked,          this,               &MainWindow::onStepClicked);
+    connect(ui->btnReset,       &QPushButton::clicked,          this,               &MainWindow::onResetClicked);
 
-    connect(console, &Console::output, ui->consoleOutput, &QPlainTextEdit::appendPlainText);
-    connect(console, &Console::clearRequested, ui->consoleOutput, &QPlainTextEdit::clear);
+    connect(project, &Project::flagsAndReg_Modified, this, &MainWindow::updateRegFlagTable);
 
+    // ---------------------------------------------------
+    // Conexão e configuração do visualizador de arquivos
+    // ---------------------------------------------------
+    modelFiles = new QFileSystemModel(this);        //instantcia um leitor de arquivos
+    modelFiles->setRootPath(project->getRootDir()); // Monitora só uma pasta de root arbitrária por enquanto
 
-
-    modelFiles = new QFileSystemModel(this); //instantica um leitor de arquivos
-
-    // Isso aqui pode mudar dps se eu quiser colocar ele pra monitorar uma pasta q o cara selecionar
-    // Por enquanto vou fazer ele mostrar a mesma pasta do projeto pra testes
-    modelFiles->setRootPath(project->getRootDir());
-
-    //Conecta o tree view com o model
+    //Conecta o tree view com o model(leitor de arquivo)
     ui->treeFiles->setModel(modelFiles);
     ui->treeFiles->setRootIndex(modelFiles->index(project->getRootDir()));
 
     //Aqui é só pra deixar bonitinho, como o treeview exibe igual um navegador de pasta (nome/tam/tipo/data) esconde as coluna q a gente n quer
-    ui->treeFiles->hideColumn(1); //esconde tamanho
-    ui->treeFiles->hideColumn(2); //esconde tipo
-    ui->treeFiles->hideColumn(3); //esconde data
-    ui->treeFiles->header()->hide(); //esconde o header
+    ui->treeFiles->hideColumn(1);       //esconde tamanho
+    ui->treeFiles->hideColumn(2);       //esconde tipo
+    ui->treeFiles->hideColumn(3);       //esconde data
+    ui->treeFiles->header()->hide();    //esconde o header
+
+    // ---------------------------------------------------
+    // Configuração das tabelas de registrador e memória
+    // ---------------------------------------------------
+    // Registradores
+    ui->tableRegs->setRowCount(10);
+    ui->tableRegs->setColumnCount(2);
+    ui->tableRegs->setHorizontalHeaderLabels({"Registrador", "Valor"});
+
+    ui->tableRegs->setItem(0, 0, new QTableWidgetItem("A"));
+    ui->tableRegs->setItem(1, 0, new QTableWidgetItem("B"));
+    ui->tableRegs->setItem(2, 0, new QTableWidgetItem("C"));
+    ui->tableRegs->setItem(3, 0, new QTableWidgetItem("D"));
+    ui->tableRegs->setItem(4, 0, new QTableWidgetItem("E"));
+    ui->tableRegs->setItem(5, 0, new QTableWidgetItem("H"));
+    ui->tableRegs->setItem(6, 0, new QTableWidgetItem("L"));
+    ui->tableRegs->setItem(7, 0, new QTableWidgetItem("PC"));
+    ui->tableRegs->setItem(8, 0, new QTableWidgetItem("SP"));
+    ui->tableRegs->setItem(9, 0, new QTableWidgetItem("F"));
+
+    // Coloca valores iniciais igual a 0.
+    for(int i = 0; i < 10; i++) {
+        ui->tableRegs->setItem(i, 1, new QTableWidgetItem("00"));
+    }
+
+    // Flags
+    ui->tableFlags->setRowCount(6);
+    ui->tableFlags->setColumnCount(2);
+    ui->tableFlags->setHorizontalHeaderLabels({"Flag", "Estado"});
+
+    ui->tableFlags->setItem(0, 0, new QTableWidgetItem("Z"));
+    ui->tableFlags->setItem(1, 0, new QTableWidgetItem("C"));
+    ui->tableFlags->setItem(2, 0, new QTableWidgetItem("S"));
+    ui->tableFlags->setItem(3, 0, new QTableWidgetItem("P/V"));
+    ui->tableFlags->setItem(4, 0, new QTableWidgetItem("H"));
+    ui->tableFlags->setItem(5, 0, new QTableWidgetItem("N"));
+
+    for(int i = 0; i < 6; i++) {
+        ui->tableFlags->setItem(i, 1, new QTableWidgetItem("0"));
+    }
+
+    ui->tableRegs->horizontalHeader()->setStretchLastSection(true);
+    ui->tableFlags->horizontalHeader()->setStretchLastSection(true);
 }
 
 MainWindow::~MainWindow()
@@ -61,26 +106,55 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+/*
+ * Quando um sinal de doubleClicked do QTreeView é emitido, ele envia o QModelIndex daquele objeto(arquivo)
+ * Essa função é chamada através do signal doubleClicked do treeView e abre o arquivo no index enviado.
+ */
+void MainWindow::on_treeFiles_doubleClicked(const QModelIndex &index) {
+    QString caminhoCompleto = modelFiles->filePath(index);  // Pega o caminho ("/home/usuario/projeto/main.asm") através do index recebido
+    QString nomeCurto = modelFiles->fileName(index);        // Pega só o nome do arquivo (main.asm) pra colocar no título da aba
+
+    // Verificação de segurança, se o cara clicou numa pasta por exemplo, a gente não abre um editor de texto, n faz sentido
+    if (modelFiles->isDir(index)) { return; }
+
+    QFile arquivo(caminhoCompleto); //abre o leitor de arquivo do QT
+
+
+    // Abre em modo de leitura (vamo só copiar oq ta escritO) e texto
+    // dá pra ler como byte depois se o cara abrir um .o/.obj depois, por simplicidade por enquanto abre como texto mesmo
+
+    /*
+     * Abre o arquivo em módulo de leitura, copia o texto pra dentro do editor q vai ser criado
+     * e fecha o arquivo.
+     */
+    if (arquivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
+
+        QTextStream fluxoLeitura(&arquivo);
+        QString conteudoDoArquivo = fluxoLeitura.readAll();         //lê o arquivo inteiro e guarda numa string
+        arquivo.close();
+        openNewFile(nomeCurto, conteudoDoArquivo, caminhoCompleto); //abre o arquivo agora no editor de texto (QPlainText)
+
+    } else {
+        ui->consoleOutput->appendPlainText("Erro: Não foi possível abrir o arquivo " + nomeCurto); //Se deu merda na hora de abrir, escreve no log
+    }
+}
+
+/*
+ * Essa função é chamada pela on_treeFiles_doubleClicked.
+ * Ela é responsável por criar a nova aba com o texto do arquivo dentro.
+ */
 void MainWindow::openNewFile(const QString &fileName, const QString &content, const QString &filepath) {
     // Cria um editor de texto novo na memória
-    QPlainTextEdit *newEditor = new QPlainTextEdit(this); //this define que esse editor de texto pertence a esta (this) janela
-
-    // Isso faz com que todo editor criado a partir de um arquivo contenha o caminho daquele arquivo.
-    newEditor->setProperty(
-        "filepath",
-        filepath
-    );
+    QPlainTextEdit *newEditor = new QPlainTextEdit(this);   //this define que esse editor de texto pertence a esta (this) janela
+    newEditor->setProperty("filepath", filepath);           // Isso faz com que todo editor criado a partir de um arquivo contenha o caminho daquele arquivo.
 
 
     // Um plaintext editor tem um document(), que vai ter algumas coisas interessantes: isModified(), e emite um signal toda vez que é modificado: modificationChanged(bool)
     // conecta o editor de texto instanciado (ele continua vivo na heap dps do fim dessa função, só perdemos o ponteiro, e o connect do signal dele continua ligado internamente)
     connect(newEditor->document(), &QTextDocument::modificationChanged, this, &MainWindow::onDocumentModified);
 
-    // Injeta o texto do arquivo lido pra dentro do editor de texto
-    newEditor->setPlainText(content);
-
-    // Seta uma fontezinha, dps da pra mudar
-    QFont fonteMono("Monospace", 10);
+    newEditor->setPlainText(content); // Injeta o texto do arquivo lido pra dentro do editor de texto
+    QFont fonteMono("Monospace", 10); // Seta uma fontezinha, dps da pra mudar
     newEditor->setFont(fonteMono);
 
     // Adiciona o editor como uma nova página dentro do TabWidget
@@ -89,59 +163,25 @@ void MainWindow::openNewFile(const QString &fileName, const QString &content, co
     ui->tabCodeEditor->setCurrentIndex(indexTab);
 }
 
-// Quando um sinal de doubleClicked do QTreeView é emitido, ele envia o QModelIndex daquele objeto(arquivo)
-// Falta: Ler QFile e , suportar outros tipos de arquivos (além de apenas text), salvar arquivo
-void MainWindow::on_treeFiles_doubleClicked(const QModelIndex &index) {
-    // Pega o caminho ("/home/usuario/projeto/main.asm") através do index recebido
-    QString caminhoCompleto = modelFiles->filePath(index);
-
-    // Pega só o nome do arquivo (main.asm) pra colocar no título da aba
-    QString nomeCurto = modelFiles->fileName(index);
-
-    // Verificação de segurança, se o cara clicou numa pasta por exemplo, a gente não abre um editor de texto, n faz sentido
-    if (modelFiles->isDir(index)) {
-        return; // Ignora sinal
-    }
-
-    // Abre um leitor de arquivo do QT (QFile) -> ver melhor como ele funciona depois
-    QFile arquivo(caminhoCompleto);
-
-    // Tentamos abrir o arquivo em modo de "Apenas Leitura" e como "Texto"
-
-    // Abre em modo de leitura (vamo só copiar oq ta escritO) e texto
-    // dá pra ler como byte depois se o cara abrir um .o/.obj depois, por simplicidade por enquanto abre como texto mesmo
-    if (arquivo.open(QIODevice::ReadOnly | QIODevice::Text)) {
-
-        // O QTextStream é um leitor de fluxos de texto do QT -> ver melhor como ele funciona depois
-        QTextStream fluxoLeitura(&arquivo);
-        QString conteudoDoArquivo = fluxoLeitura.readAll(); //lê o arquivo inteiro e guarda numa string
-        arquivo.close();
-
-        openNewFile(nomeCurto, conteudoDoArquivo, caminhoCompleto); //abre o arquivo agora no editor de texto (QPlainText)
-
-    } else {
-        //Se deu merda na hora de abrir, escreve no log
-        ui->consoleOutput->appendPlainText("Erro: Não foi possível abrir o arquivo " + nomeCurto);
-    }
-}
-
-//essa função fecha a aba E destrói o QPlainTextEdit que foi criado com abrimos ela (eles n são conectados por podrão)
+/*
+ * Essa função fica escutando o signal do botão "x" habilitado nas abas
+ * Qaundo escuta, ela fecha a aba E destrói o QPlainTextEdit que foi criado com abrimos ela (eles n são conectados por podrão)
+ */
 void MainWindow::closeTab(int index) {
     QWidget *widget = ui->tabCodeEditor->widget(index); //resgata o ponteiro pro plaintext (widget da aba index)
     ui->tabCodeEditor->removeTab(index);                //deleta a aba
     widget->deleteLater();                              //deleta depois que os eventos relacionado à essa função finalizarem (evita segfault caso algum evento ainda esteja usando o widget)
 }
 
-//Recebe um sinal quando o arquivo foi modificado (se a flag mudou, de false pra true, alguém escreveu, de true pra false, salvou. Ambos sinais são capturados por essa função)
+/*
+ * Recebe um sinal quando o arquivo foi modificado (se a flag mudou, de false pra true, alguém escreveu, de true pra false, salvou.
+ * Ambos sinais são capturados por essa função).
+ * Ela muda o texto da aba pra "*arquivo" quando ele é modificado, e volta para "arquivo" quando ele é salvo
+ *
+ * Foi utilizada a lógica de subir hierarquia de classes do QT através do sender(), um método pra descobrir quem enviou o
+ * signal "modified"
+ */
 void MainWindow::onDocumentModified(bool modified) {
-    /*
-     * to usando a lógica de subir hierarquia, mas dava pra salvar a referência do editor em algum lugar
-     * agr como ja ta pronto aqui é os guri
-     *
-    // Precisamos descobrir quem (qual aba) emitiu o sinal
-    // Descobre qual texto foi alterado (dps parent()->parent retorna o editor de texto)
-    // sender() retorna um QObject, converte ele pro objeto que a gente assume ser(via qobject_cast, q tem segurança, se n for o objeto q a gente deu cast, vai retornar null.)
-    */
 
     //método sender descobre qual document (dos nossos widgets de texto, q tao numa tab) enviou o sinal
     QTextDocument *document = qobject_cast<QTextDocument*>(sender());
@@ -162,10 +202,10 @@ void MainWindow::onDocumentModified(bool modified) {
     } else {
         if(tabName.startsWith("*")) {
             // mid extrai uma substring de n caracteres começando em x. mid(x, n)
-            ui->tabCodeEditor->setTabText(tabIdx, tabName.mid(1)); //mid 1 extrai todos caracteres a partir do 1
+            //mid 1 extrai todos caracteres a partir do 1
+            ui->tabCodeEditor->setTabText(tabIdx, tabName.mid(1));  //basicamente tira fora o "*"
         }
     }
-
 }
 
 /*
@@ -183,8 +223,10 @@ void MainWindow::saveCurrentFile() {
     editor->document()->setModified(false);
 }
 
-// percorre tabs, acha oq tem filepath igual e salva.
-// horrivel melhor usar o ctrl+s, mas se o puto quiser tem.
+/*
+ * percorre tabs, acha oq tem filepath igual e salva.
+ * horrivel melhor usar o ctrl+s, mas se o puto quiser tem.
+ */
 void MainWindow::saveFile(const QString &path) {
     for (int i = 0; i < ui->tabCodeEditor->count(); i++) {
         QPlainTextEdit *editor = qobject_cast<QPlainTextEdit*>(ui->tabCodeEditor->widget(i));
@@ -198,11 +240,47 @@ void MainWindow::saveFile(const QString &path) {
     }
 }
 
+/*
+ * Escuta o signal da CLI embutida (quando o cara pressiona enter)
+ * e envia a string capturada pra classe q gerencia o Console
+ * limpando oq tiver escrito
+ */
 void MainWindow::onCommandEntered() {
     QString line = ui->commandInput->text();
     console->executeCommand(line);
     ui->commandInput->clear();
 }
 
+void MainWindow::onRunClicked() {
+    ui->consoleOutput->appendPlainText("Botão RUN clicado!");
+}
 
+void MainWindow::onStepClicked() {
+    ui->consoleOutput->appendPlainText("Botão STEP clicado!");
+}
 
+void MainWindow::onResetClicked() {
+    ui->consoleOutput->appendPlainText("Botão RESET clicado!");
+}
+
+void MainWindow::updateRegFlagTable(const VMState &state) {
+    //da pra adicionar na interface dps um label com o state da VM (idle, running etc)
+    // e atualizar via state snapshot tb
+    ui->tableRegs->item(0, 1)->setText(QString::number(state.A));
+    ui->tableRegs->item(1, 1)->setText(QString::number(state.B));
+    ui->tableRegs->item(2, 1)->setText(QString::number(state.C));
+    ui->tableRegs->item(3, 1)->setText(QString::number(state.D));
+    ui->tableRegs->item(4, 1)->setText(QString::number(state.E));
+    ui->tableRegs->item(5, 1)->setText(QString::number(state.H));
+    ui->tableRegs->item(6, 1)->setText(QString::number(state.L));
+    ui->tableRegs->item(7, 1)->setText(QString::number(state.F));
+    ui->tableRegs->item(8, 1)->setText(QString::number(state.PC));
+    ui->tableRegs->item(9, 1)->setText(QString::number(state.SP));
+
+    ui->tableFlags->item(0, 1)->setText(state.flagZ ? "1" : "0");
+    ui->tableFlags->item(1, 1)->setText(state.flagS ? "1" : "0");
+    ui->tableFlags->item(2, 1)->setText(state.flagC ? "1" : "0");
+    ui->tableFlags->item(3, 1)->setText(state.flagH ? "1" : "0");
+    ui->tableFlags->item(4, 1)->setText(state.flagN ? "1" : "0");
+    ui->tableFlags->item(5, 1)->setText(state.flagPV ? "1" : "0");
+}

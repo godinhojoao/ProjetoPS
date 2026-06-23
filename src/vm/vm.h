@@ -12,11 +12,13 @@ public:
    *         Deve ser chamado antes de run() quando se quer executar um programa.
    *
    * @param  binPath  Caminho do arquivo .bin montado pelo assembler.
+   * @param  startAddr Endereço inicial de gravação(padrão 0x0000)
    * @return          true se carregou ao menos 1 byte; false em caso de erro.
    */
-  bool load(const std::string& binPath);
-
+  bool load(const std::string& binPath, uint16_t startAddr = 0x0000);
   void run();
+  //bool step();
+  //void reset();
 
 private:
   Memory mem;

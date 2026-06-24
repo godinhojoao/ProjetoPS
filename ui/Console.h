@@ -40,7 +40,10 @@ Commands (all operations are done inside root):
     assemble <f1> <f2> ...        assemble files into .o  (not implemented)
     link     <f1> <f2> ...        link .o into binary     (not implemented)
     build    <f1> <f2> ...        assemble + link         (not implemented)
-    run      <path>               execute binary          (not implemented)
+    run      <path>               load and execute binary
+    load     <path>               load a binary file to VM
+    step                          execute 1 instruction of a loaded file
+    reset                         reset cpu state
 
   General
     help                          show this message

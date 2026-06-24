@@ -17,6 +17,7 @@ set(PROJECT_SOURCES
         mainwindow.cpp
         mainwindow.h
         mainwindow.ui
+        resources.qrc
         ../src/cpu/cpu.h
         ../src/cpu/cpu.cpp
         ../src/instruction_set/decoder.cpp
@@ -63,6 +64,7 @@ else()
 endif()
 
 target_include_directories(ui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src)
+target_include_directories(ui PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../data)
 
 target_link_libraries(ui PRIVATE Qt${QT_VERSION_MAJOR}::Widgets)
 

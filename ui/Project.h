@@ -27,6 +27,9 @@ public:
     bool link(const QStringList &input);
     bool build(const QStringList &input);
     bool run(const QString &binPath);
+    bool load(const QString &binPath);
+    bool step();
+    void resetCpu();
 
     // bool saveFile(const QString &input);
     bool saveFileShortcut(const QString &filepath, const QString &content);

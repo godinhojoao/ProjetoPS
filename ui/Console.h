@@ -56,6 +56,9 @@ Commands (all operations are done inside root):
     void link(const QStringList &tokens);
     void run(const QStringList &tokens);
     void build(const QStringList &tokens);
+    void load(const QStringList &tokens);
+    void step(const QStringList &tokens);
+    void reset(const QStringList &tokens);
     Project *project;
 
 

@@ -36,6 +36,12 @@ void Console::executeCommand(const QString &line) {
         run(tokens);
     } else if(command == "build") {
 
+    } else if(command == "step") {
+        step(tokens);
+    } else if(command == "reset") {
+        reset(tokens);
+    } else if(command == "load") {
+        load(tokens);
     } else {
         emit output("Unknown operand");
     }
@@ -157,6 +163,8 @@ void Console::run(const QStringList &tokens) {
     bool success = project->run(tokens[1]);
     if(!success) {
         emit output("Failed to run .exe file");
+    } else {
+        emit output("Runned succesfully");
     }
 }
 
@@ -172,7 +180,29 @@ void Console::build(const QStringList &tokens) {
     }
 }
 
+void Console::load(const QStringList &tokens) {
+    if(tokens.size() < 2) {
+        emit output("missing operand on load");
+        return;
+    }
 
+    if(!project->load(tokens[1])) {
+        emit output("Failed to load " + tokens[1] + "into vm memory");
+    } else {
+        emit output(tokens[1] + " loaded to vm memory successfully");
+    }
+}
+
+void Console::step(const QStringList &tokens) {
+    if(!project->step()) {
+        emit output("Failed to proceed with execution");
+    }
+}
+
+void Console::reset(const QStringList &tokens) {
+    project->resetCpu();
+    emit output("CPU Reseted");
+}
 
 
 

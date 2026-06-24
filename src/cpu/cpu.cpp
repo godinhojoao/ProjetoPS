@@ -26,6 +26,26 @@ CPUState CPU::getState() const {
     return { A, B, C, D, E, H, L, F, PC, SP };
 }
 
+void CPU::setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP) {
+    this->A = A;
+    this->B = B;
+    this->C = C;
+    this->D = D;
+    this->E = E;
+    this->H = H;
+    this->L = L;
+    this->F = F;
+    this->PC = PC;
+    this->SP = SP;
+}
+
+void CPU::resetCpu() {
+    A = 0; B = 0; C = 0; D = 0; E = 0; H = 0; L = 0;
+    F = 0;
+    PC = 0;
+    SP = VM_MEMORY_IN_BYTES - 1;
+}
+
 uint8_t *CPU::getRegister8(uint8_t code)
 {
   // 0: B, 1: C, 2: D, 3: E, 4: H, 5: L, 6: (HL - não usado aqui), 7: A

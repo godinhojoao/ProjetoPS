@@ -16,6 +16,8 @@ class CPU
 public:
     uint16_t getPC() const;
     CPUState getState() const;
+    void setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP);
+    void resetCpu();
     bool getFlag(uint8_t mask) const;
     bool cycle(const Instruction& inst, Memory& mem);
 

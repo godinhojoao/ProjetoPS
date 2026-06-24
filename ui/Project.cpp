@@ -78,6 +78,24 @@ bool Project::run(const QString &binPath) {
     return true;
 }
 
+bool Project::load(const QString &binPath) {
+    QString path = resolvePath(binPath) ;
+    if(!vm.load(path.toStdString())) return false;
+
+    emit flagsAndReg_Modified(vm.getState());
+    return true;
+}
+
+bool Project::step() {
+    emit flagsAndReg_Modified(vm.getState());
+    return vm.step();
+}
+
+void Project::resetCpu() {
+    vm.reset();
+    emit flagsAndReg_Modified(vm.getState());
+}
+
 bool Project::saveFileShortcut(const QString &filepath, const QString &content) {
     QFile file(filepath);
 

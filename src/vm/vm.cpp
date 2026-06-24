@@ -3,6 +3,7 @@
 #include <iostream>
 
 bool VM::load(const std::string& binPath, uint16_t startAddr) {
+    reset(); //reseta cpu
     BinaryLoader loader;
 
     // startAddr can be used to put a different .asm in memory at the same time.
@@ -28,10 +29,15 @@ void VM::run() {
 }
 
 bool VM::step() {
+    if (cpu.getPC() < mem.getLoadedAreaEnd()) {
+        Instruction inst = Decoder::decode(mem, cpu.getPC());
+        return cpu.cycle(inst, mem);
+    }
     return false;
 }
 
 void VM::reset() {
+    cpu.resetCpu();
     return;
 }
 

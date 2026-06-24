@@ -4,6 +4,7 @@
 #include "Project.h"
 #include <QDir>
 #include <QHeaderView>
+#include <QIcon>
 
 // Construtor da MainWindow (oq eu configurar por aqui vem por padrão na hora do run)
 MainWindow::MainWindow(QWidget *parent)
@@ -11,6 +12,8 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    setWindowTitle("Z80");
 
     project = new Project();              // classe q controla o backend (controller)
     console = new Console(project, this); // classe q controla o console

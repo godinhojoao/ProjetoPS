@@ -1,14 +1,16 @@
 #include "Project.h"
 #include <QDir>
+#include <QDebug>
 
 Project::Project() {
 }
 
 QString Project::resolvePath(const QString &input) {
     // Clean path limpa alguns errinhos da string, tipo duplicar //
-    QString resolved = QDir::cleanPath(rootDir + "/" + input);
+    QString cleanRoot = QDir::cleanPath(rootDir);
+    QString resolved = QDir::cleanPath(cleanRoot + "/" + input);
 
-    if (!resolved.startsWith(rootDir)) {
+    if (!resolved.startsWith(cleanRoot)) {
         return QString();
     }
 
@@ -19,6 +21,10 @@ QString Project::resolvePath(const QString &input) {
 
 QString Project::getRootDir() const {
     return rootDir;
+}
+
+void Project::setRootDir(const QString &path) {
+    rootDir = path;
 }
 
 bool Project::createDirectory(const QString &input) {
@@ -56,16 +62,50 @@ bool Project::remove(const QString &input) {
     return file.remove();
 }
 
-bool Project::assemble(const QStringList &input) {
-    return false;
+QStringList Project::assemble(const QStringList &input) {
+    QStringList binPaths;
+    //assemble <f1> <f2> ...
+    for (const QString &file : input) {
+        QString realFilePath = resolvePath(file);
+        //chama processador de macro
+        mp.reset(); //garante q ta limpo pra processar novos macros
+        mp.findAndStoreMacros(realFilePath.toStdString());
+
+        QString expandedFilePath = realFilePath + "-expanded.asm";
+        QFile tmpFile(expandedFilePath);
+
+        if(!tmpFile.open(QIODevice::WriteOnly | QIODevice::Text)) { return {}; }
+        QTextStream out(&tmpFile);
+        out << QString::fromStdString(mp.getExpandedCode());
+        tmpFile.close();
+
+        //envia arq expandido temporario pro assembler
+        QString binPath = QString::fromStdString(assembler.assemble(expandedFilePath.toStdString()));
+        binPaths.append(binPath);
+
+        //dps de gerar .bin, exclui o arquivo temporário
+        // o normal seria isso, mas ele diz na especificação q quer, ent n deleta
+        // QFile::remove(expandedFilePath);
+    }
+    return binPaths;
 }
 
-bool Project::link(const QStringList &input) {
-    return false;
+QString Project::link(const QStringList &input) {
+    // nao ta pronto ainda ent n tem, mas recebe a lista de .bin
+    // devolve o Path de um .bin final
+    return "";
 }
 
 bool Project::build(const QStringList &input) {
-    return false;
+    QStringList filesAssembled = assemble(input);
+    if(filesAssembled.empty()) return false;
+
+    QString finalBinPath = link(input);
+    if(finalBinPath.isEmpty()) return false;
+
+    if(!run(finalBinPath)) return false;
+
+    return true;
 }
 
 bool Project::run(const QString &binPath) {

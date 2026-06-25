@@ -39,10 +39,11 @@ private:
 class MacroProcessor
 {
 public:
-  void findAndStoreMacros(std::string file);
-  const std::string getExpandedCode() {
-    return this->expandedCode;
-  };
+    void findAndStoreMacros(std::string file);
+    void reset();
+    const std::string getExpandedCode() {
+        return this->expandedCode;
+    };
 
 private:
   std::unordered_map<std::string, MacroInstruction> macroInstructions;

@@ -5,6 +5,9 @@
 #include <QString>
 #include "vm/vm.h"
 #include "vmstate.h"
+#include "assembler/assembler.h"
+#include "macro_processor/macro_processor.h"
+#include <QCoreApplication>
 
 /*
  * Responsabilidades:
@@ -23,10 +26,12 @@ public:
     bool deleteDirectory(const QString &input);
     bool touch(const QString &input);
     bool remove(const QString &input);
-    bool assemble(const QStringList &input);
-    bool link(const QStringList &input);
+
+    QStringList assemble(const QStringList &input);
+    QString link(const QStringList &input);
     bool build(const QStringList &input);
     bool run(const QString &binPath);
+
     bool load(const QString &binPath);
     bool step();
     void resetCpu();
@@ -35,13 +40,19 @@ public:
     bool saveFileShortcut(const QString &filepath, const QString &content);
 
     QString getRootDir() const;
+    void setRootDir(const QString &path);
 
 signals:
     void flagsAndReg_Modified(const VMState &state);
 
 private:
-    QString rootDir = "/home/lucascacz/ProjectTestQT";
+    QString rootDir;
+
+    // Project controla tudo
     VM vm;
+    Assembler assembler;
+    MacroProcessor mp;
+
 };
 
 #endif // PROJECT_H

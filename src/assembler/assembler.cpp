@@ -234,6 +234,18 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
     return errors.empty();
 }
 
+std::string Assembler::secondPass() {
+    //gera binário e retorna o path
+    return "";
+}
+
+//retorna o path do binário gerado
+std::string Assembler::assemble(const std::string& asmCode) {
+    firstPass(asmCode, 0);
+    secondPass();
+    return "";
+}
+
 // getters
 const std::unordered_map<std::string, uint16_t>& Assembler::getSymbolTable() const {
     return symbolTable;

@@ -29,13 +29,13 @@ void Console::executeCommand(const QString &line) {
     } else if(command == "save") {
         save(tokens);
     } else if(command == "assemble") {
-
+        assemble(tokens);
     } else if(command == "link") {
-
+        //ainda n ta implementado, n tem backend
     } else if(command == "run") {
         run(tokens);
     } else if(command == "build") {
-
+        build(tokens);
     } else if(command == "step") {
         step(tokens);
     } else if(command == "reset") {
@@ -134,8 +134,7 @@ void Console::assemble(const QStringList &tokens) {
         return;
     }
 
-    bool success = project->assemble(tokens.mid(1));
-    if(!success) {
+    if(project->assemble(tokens.mid(1)).empty()) {
         emit output("Failed to assemble files");
     }
 }
@@ -147,8 +146,7 @@ void Console::link(const QStringList &tokens) {
         return;
     }
 
-    bool success = project->link(tokens.mid(1));
-    if(!success) {
+    if(project->link(tokens.mid(1)).isEmpty()) {
         emit output("Failed to link files");
     }
 }

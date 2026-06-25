@@ -30,6 +30,12 @@ public:
      */
     bool firstPass(const std::string& asmCode, uint16_t startAddress = 0x0000);
 
+    //futuramente vai existir uma secondPass
+    std::string secondPass();
+
+    //fução q executa os 2 passos. implementar certinho dps
+    std::string assemble(const std::string& asmCode);
+
     /**
      * @brief  Retorna a tabela de símbolos construída no primeiro passo.
      *         Mapeamento: nome_do_rótulo -> endereço de memória.

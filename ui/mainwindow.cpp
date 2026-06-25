@@ -7,15 +7,16 @@
 #include <QIcon>
 
 // Construtor da MainWindow (oq eu configurar por aqui vem por padrão na hora do run)
-MainWindow::MainWindow(QWidget *parent)
+MainWindow::MainWindow(Project *project, QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    this->project = project;
 
     setWindowTitle("Z80");
 
-    project = new Project();              // classe q controla o backend (controller)
+    // project = new Project();              // classe q controla o backend (controller)
     console = new Console(project, this); // classe q controla o console
 
     ui->tabCodeEditor->setTabsClosable(true); //habilita o btn 'X' com signal nas abas do tabCodeEditor

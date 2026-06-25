@@ -35,6 +35,8 @@ set(PROJECT_SOURCES
         ../src/macro_processor/macro_processor.h
         ../src/shared/shared.cpp
         ../src/shared/shared.h
+        ../src/assembler/assembler.cpp
+        ../src/assembler/assembler.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

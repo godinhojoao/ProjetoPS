@@ -130,3 +130,8 @@ void MacroProcessor::findAndStoreMacros(std::string file)
   }
   inFile.close();
 }
+
+void MacroProcessor::reset() {
+    macroInstructions.clear();
+    expandedCode = "";
+}

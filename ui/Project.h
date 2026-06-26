@@ -42,6 +42,8 @@ public:
     QString getRootDir() const;
     void setRootDir(const QString &path);
 
+    bool isLoaded() const;
+
 signals:
     void flagsAndReg_Modified(const VMState &state);
 

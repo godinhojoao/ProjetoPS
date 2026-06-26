@@ -2,6 +2,7 @@
 #include "./ui_mainwindow.h"
 #include "Console.h"
 #include "Project.h"
+#include "btnrun_popup.h"
 #include <QDir>
 #include <QHeaderView>
 #include <QIcon>
@@ -256,15 +257,29 @@ void MainWindow::onCommandEntered() {
 }
 
 void MainWindow::onRunClicked() {
-    ui->consoleOutput->appendPlainText("Botão RUN clicado!");
+    btnRun_popup dialog(project->getRootDir(), this);
+
+    if(dialog.exec() == QDialog::Accepted) {
+        project->resetCpu();
+        project->run(dialog.getSelectedFileName());
+        ui->consoleOutput->appendPlainText("Runned succesfully");
+    } else {
+        ui->consoleOutput->appendPlainText("Failed to run .bin file");
+    }
 }
 
 void MainWindow::onStepClicked() {
-    ui->consoleOutput->appendPlainText("Botão STEP clicado!");
+    if(project->isLoaded()) {
+        project->step();
+        // ui->consoleOutput->appendPlainText("step");
+    } else {
+        ui->consoleOutput->appendPlainText("Nenhum programa carregado na memória");
+    }
 }
 
 void MainWindow::onResetClicked() {
-    ui->consoleOutput->appendPlainText("Botão RESET clicado!");
+    project->resetCpu();
+    ui->consoleOutput->appendPlainText("CPU Reseted");
 }
 
 void MainWindow::updateRegFlagTable(const VMState &state) {

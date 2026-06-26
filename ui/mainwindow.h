@@ -42,10 +42,15 @@ private:
     void onDocumentModified(bool modified);
     void saveCurrentFile();
     void saveFile(const QString &path);
+
     void onCommandEntered();
+    void onAssembleClicked();
+    void onLinkClicked();
+    void onBuildClicked();
     void onRunClicked();
     void onStepClicked();
     void onResetClicked();
+
     void updateRegFlagTable(const VMState &state);
 };
 #endif // MAINWINDOW_H

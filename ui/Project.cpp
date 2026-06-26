@@ -103,9 +103,10 @@ bool Project::build(const QStringList &input) {
     QString finalBinPath = link(input);
     if(finalBinPath.isEmpty()) return false;
 
-    if(!run(finalBinPath)) return false;
+    //acho q esse run n é necessário aqui, mas caso for...
+    // if(!run(finalBinPath)) return false;
 
-    return true;
+    return true; //gerou o binario
 }
 
 bool Project::run(const QString &binPath) {
@@ -150,4 +151,8 @@ bool Project::saveFileShortcut(const QString &filepath, const QString &content) 
     file.close();
 
     return true;
+}
+
+bool Project::isLoaded() const{
+    return vm.isLoaded();
 }

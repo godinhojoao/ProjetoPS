@@ -46,6 +46,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Console.h Console.cpp
         Project.h Project.cpp
         vmstate.h
+        btnrun_popup.h btnrun_popup.cpp btnrun_popup.ui
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET ui APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

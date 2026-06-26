@@ -160,7 +160,7 @@ void Console::run(const QStringList &tokens) {
 
     bool success = project->run(tokens[1]);
     if(!success) {
-        emit output("Failed to run .exe file");
+        emit output("Failed to run .bin file");
     } else {
         emit output("Runned succesfully");
     }

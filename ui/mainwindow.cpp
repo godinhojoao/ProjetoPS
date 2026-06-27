@@ -40,6 +40,10 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     connect(console,            &Console::output,               ui->consoleOutput,  &QPlainTextEdit::appendPlainText);
     connect(console,            &Console::clearRequested,       ui->consoleOutput,  &QPlainTextEdit::clear);
 
+    connect(ui->btnAssemble,    &QPushButton::clicked,          this,               &MainWindow::onAssembleClicked);
+    connect(ui->btnLink,        &QPushButton::clicked,          this,               &MainWindow::onLinkClicked);
+    connect(ui->btnBuild,       &QPushButton::clicked,          this,               &MainWindow::onBuildClicked);
+    connect(ui->btnLoad,        &QPushButton::clicked,          this,               &MainWindow::onLoadClicked);
     connect(ui->btnRun,         &QPushButton::clicked,          this,               &MainWindow::onRunClicked);
     connect(ui->btnStep,        &QPushButton::clicked,          this,               &MainWindow::onStepClicked);
     connect(ui->btnReset,       &QPushButton::clicked,          this,               &MainWindow::onResetClicked);
@@ -83,7 +87,7 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
 
     // Coloca valores iniciais igual a 0.
     for(int i = 0; i < 10; i++) {
-        ui->tableRegs->setItem(i, 1, new QTableWidgetItem("00"));
+        ui->tableRegs->setItem(i, 1, new QTableWidgetItem("0"));
     }
 
     // Flags
@@ -101,6 +105,8 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     for(int i = 0; i < 6; i++) {
         ui->tableFlags->setItem(i, 1, new QTableWidgetItem("0"));
     }
+
+    // updateRegFlagTable(project->getVmState());
 
     ui->tableRegs->horizontalHeader()->setStretchLastSection(true);
     ui->tableFlags->horizontalHeader()->setStretchLastSection(true);
@@ -254,6 +260,30 @@ void MainWindow::onCommandEntered() {
     QString line = ui->commandInput->text();
     console->executeCommand(line);
     ui->commandInput->clear();
+}
+
+void MainWindow::onAssembleClicked() {
+    ui->consoleOutput->appendPlainText("assemble clicked");
+}
+
+void MainWindow::onLinkClicked() {
+    ui->consoleOutput->appendPlainText("link clicked");
+}
+
+void MainWindow::onBuildClicked() {
+    ui->consoleOutput->appendPlainText("build clicked");
+}
+
+void MainWindow::onLoadClicked() {
+    btnRun_popup dialog(project->getRootDir(), this);
+
+    if(dialog.exec() == QDialog::Accepted) {
+        project->resetCpu();
+        project->load(dialog.getSelectedFileName());
+        ui->consoleOutput->appendPlainText("File loaded successfully");
+    } else {
+        ui->consoleOutput->appendPlainText("Failed to laod .bin file");
+    }
 }
 
 void MainWindow::onRunClicked() {

@@ -10,6 +10,7 @@ public:
 
   uint32_t getLoadedAreaEnd() const;
   void setLoadedAreaEnd(uint32_t end);
+  void resetLoadedArea();
 
 private:
   uint8_t data[VM_MEMORY_IN_BYTES] = {};

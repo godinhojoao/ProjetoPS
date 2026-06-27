@@ -44,6 +44,8 @@ public:
 
     bool isLoaded() const;
 
+    VMState getVmState() const;
+
 signals:
     void flagsAndReg_Modified(const VMState &state);
 

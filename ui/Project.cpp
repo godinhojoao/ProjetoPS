@@ -121,6 +121,7 @@ bool Project::run(const QString &binPath) {
 
 bool Project::load(const QString &binPath) {
     QString path = resolvePath(binPath) ;
+    vm.reset();
     if(!vm.load(path.toStdString())) return false;
 
     emit flagsAndReg_Modified(vm.getState());
@@ -155,4 +156,8 @@ bool Project::saveFileShortcut(const QString &filepath, const QString &content) 
 
 bool Project::isLoaded() const{
     return vm.isLoaded();
+}
+
+VMState Project::getVmState() const {
+    return vm.getState();
 }

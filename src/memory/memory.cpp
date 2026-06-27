@@ -25,3 +25,8 @@ void Memory::setLoadedAreaEnd(uint32_t end)
 {
   loadedAreaEnd = end;
 }
+
+void Memory::resetLoadedArea() {
+    // posteriormente dá pra fazer receber um end e ir zerando toda memória
+    loadedAreaEnd = 0;
+}

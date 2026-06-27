@@ -47,6 +47,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         Project.h Project.cpp
         vmstate.h
         btnrun_popup.h btnrun_popup.cpp btnrun_popup.ui
+        btnbuild_popup.h btnbuild_popup.cpp btnbuild_popup.ui
+
 
     )
 # Define target properties for Android with Qt 6 as:

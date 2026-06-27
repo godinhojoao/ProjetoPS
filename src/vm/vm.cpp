@@ -6,7 +6,7 @@ bool VM::load(const std::string& binPath, uint16_t startAddr) {
     reset(); //reseta cpu
     BinaryLoader loader;
 
-    // startAddr can be used to put a different .asm in memory at the same time.
+    // (not used) startAddr can be used to put a different .asm in memory at the same time.
     // if not informed in load, it will be 0x0000.
 
     uint32_t bytesLoaded = loader.load(binPath, mem, startAddr); // 64kb 2ˆ16 bytes = 65536 bytes
@@ -38,6 +38,7 @@ bool VM::step() {
 
 void VM::reset() {
     cpu.resetCpu();
+    mem.resetLoadedArea();
     return;
 }
 

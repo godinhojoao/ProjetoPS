@@ -47,6 +47,7 @@ private:
     void onAssembleClicked();
     void onLinkClicked();
     void onBuildClicked();
+    void onLoadClicked();
     void onRunClicked();
     void onStepClicked();
     void onResetClicked();

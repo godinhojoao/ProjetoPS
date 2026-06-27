@@ -75,5 +75,5 @@ VMState VM::getState() const {
 }
 
 bool VM::isLoaded() const {
-    return (mem.getLoadedAreaEnd() > 0) ? true : false;
+    return mem.getLoadedAreaEnd() > 0 ? true : false;
 }

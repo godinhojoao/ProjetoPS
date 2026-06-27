@@ -35,9 +35,10 @@ btnRun_popup::~btnRun_popup()
     delete ui;
 }
 
-// QString btnRun_popup::getSelectedFilePath() const {
-//     return ui->fileOptions->currentData().toString();
-// }
+// pega o caminho relativo à ROOT (usado pra executar)
+QString btnRun_popup::getSelectedFilePath() const {
+    return QDir(rootPath).relativeFilePath(ui->fileOptions->currentData().toString());
+}
 
 QString btnRun_popup::getSelectedFileName() const {
     return ui->fileOptions->currentText();

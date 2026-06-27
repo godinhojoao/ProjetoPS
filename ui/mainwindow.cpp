@@ -3,6 +3,7 @@
 #include "Console.h"
 #include "Project.h"
 #include "btnrun_popup.h"
+#include "btnbuild_popup.h"
 #include <QDir>
 #include <QHeaderView>
 #include <QIcon>
@@ -264,14 +265,24 @@ void MainWindow::onCommandEntered() {
 
 void MainWindow::onAssembleClicked() {
     ui->consoleOutput->appendPlainText("assemble clicked");
+
+    // Aqui a própria janela gerencia a lógica interna
+    // com o mesmo controller (project)
+    // oq eu fiz com o btnRun foi diferente por causa dos objetos (e foi meio gambiarra)
+    btnBuild_popup dialog(project, "assemble", this);
+    dialog.exec();
 }
 
 void MainWindow::onLinkClicked() {
     ui->consoleOutput->appendPlainText("link clicked");
+    btnBuild_popup dialog(project, "link", this);
+    dialog.exec();
 }
 
 void MainWindow::onBuildClicked() {
     ui->consoleOutput->appendPlainText("build clicked");
+    btnBuild_popup dialog(project, "build", this);
+    dialog.exec();
 }
 
 void MainWindow::onLoadClicked() {
@@ -291,7 +302,7 @@ void MainWindow::onRunClicked() {
 
     if(dialog.exec() == QDialog::Accepted) {
         project->resetCpu();
-        project->run(dialog.getSelectedFileName());
+        project->run(dialog.getSelectedFilePath());
         ui->consoleOutput->appendPlainText("Runned succesfully");
     } else {
         ui->consoleOutput->appendPlainText("Failed to run .bin file");

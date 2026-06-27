@@ -15,7 +15,7 @@ public:
     explicit btnRun_popup(const QString &rootPath, QWidget *parent = nullptr);
     ~btnRun_popup();
 
-    // QString getSelectedFilePath() const;
+    QString getSelectedFilePath() const;
     QString getSelectedFileName() const;
 
 private:

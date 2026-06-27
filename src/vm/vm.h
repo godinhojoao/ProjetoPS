@@ -21,6 +21,7 @@ public:
     bool step();
     void reset();
     VMState getState() const; //snapshot dos registradores e flags
+    bool isLoaded() const;
     // uint8_t readMemory(uint16_t addr) const;           // lê um byte da memória
     // std::vector<uint8_t> readMemoryRange(uint16_t start, uint16_t length) const;
 

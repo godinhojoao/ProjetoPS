@@ -1,6 +1,6 @@
 #ifndef DECODER_H
 #define DECODER_H
-
+//Augusto Menchaca
 #include <cstdint>
 #include "instruction.h"
 #include "../memory/memory.h"

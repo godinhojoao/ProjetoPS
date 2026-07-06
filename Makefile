@@ -7,6 +7,7 @@ SRC = src/main_cli.cpp \
       src/cpu/cpu.cpp \
       src/instruction_set/decoder.cpp \
       src/loader/binary_loader.cpp \
+      src/linker/linker.cpp \
       src/macro_processor/macro_processor.cpp \
       src/memory/memory.cpp
 

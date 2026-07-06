@@ -96,9 +96,26 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
             break;
         }
 
-        // not implemented
         case OpcodeType::SUB_R: {
-            // break;
+            uint8_t val;
+            if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+                val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+            } else {
+                val = *getRegister8(inst.sourceReg);
+            }
+
+            uint16_t diff = A - val;
+            uint8_t result = static_cast<uint8_t>(diff);
+
+            setFlagMask(FLAG_S, (result & 0x80) != 0);
+            setFlagMask(FLAG_Z, result == 0);
+            setFlagMask(FLAG_H, (A & 0x0F) < (val & 0x0F));
+            setFlagMask(FLAG_PV, ((A ^ val) & (A ^ result) & 0x80) != 0);
+            setFlagMask(FLAG_N, true);
+            setFlagMask(FLAG_C, A < val);
+
+            A = result;
+            break;
         }
 
         case OpcodeType::CP_R: {
@@ -119,9 +136,6 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
             setFlagMask(FLAG_N, true);
             setFlagMask(FLAG_C, A < val);
 
-            if (inst.type == OpcodeType::SUB_R) {
-                A = result;
-            }
             break;
         }
 
@@ -181,14 +195,56 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
             break;
         }
 
-        // not implemented
         case OpcodeType::AND_R: {
-            // break;
+            uint8_t val;
+            if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+                val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+            } else {
+                val = *getRegister8(inst.sourceReg);
+            }
+
+            A &= val;
+            setFlagMask(FLAG_H, true); // Z80 behavior: AND sets H
+
+            setFlagMask(FLAG_S, (A & 0x80) != 0);
+            setFlagMask(FLAG_Z, A == 0);
+
+            // P/V on logic indicates parity (1 = even, 0 = odd)
+            uint8_t p = A;
+            p ^= p >> 4;
+            p ^= p >> 2;
+            p ^= p >> 1;
+            setFlagMask(FLAG_PV, !(p & 1));
+
+            setFlagMask(FLAG_N, false);
+            setFlagMask(FLAG_C, false);
+            break;
         }
 
-        // not implemented
         case OpcodeType::OR_R: {
-            // break;
+            uint8_t val;
+            if (inst.sourceReg == static_cast<uint8_t>(Register::HL_INDIRECT)) {
+                val = mem.read((static_cast<uint16_t>(H) << 8) | L);
+            } else {
+                val = *getRegister8(inst.sourceReg);
+            }
+
+            A |= val;
+            setFlagMask(FLAG_H, false);
+
+            setFlagMask(FLAG_S, (A & 0x80) != 0);
+            setFlagMask(FLAG_Z, A == 0);
+
+            // P/V on logic indicates parity (1 = even, 0 = odd)
+            uint8_t p = A;
+            p ^= p >> 4;
+            p ^= p >> 2;
+            p ^= p >> 1;
+            setFlagMask(FLAG_PV, !(p & 1));
+
+            setFlagMask(FLAG_N, false);
+            setFlagMask(FLAG_C, false);
+            break;
         }
 
         case OpcodeType::XOR_R: {
@@ -199,16 +255,8 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
                 val = *getRegister8(inst.sourceReg);
             }
 
-            if (inst.type == OpcodeType::AND_R) {
-                A &= val;
-                setFlagMask(FLAG_H, true); // Z80 behavior: AND sets H
-            } else if (inst.type == OpcodeType::OR_R) {
-                A |= val;
-                setFlagMask(FLAG_H, false);
-            } else {
-                A ^= val;
-                setFlagMask(FLAG_H, false);
-            }
+            A ^= val;
+            setFlagMask(FLAG_H, false);
 
             setFlagMask(FLAG_S, (A & 0x80) != 0);
             setFlagMask(FLAG_Z, A == 0);

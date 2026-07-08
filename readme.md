@@ -14,5 +14,3 @@
 - [Documentação da VM - teoria](./vm.md)
 - [Documentação da VM - código (nao tem ainda)](./vm-codigo.md)
 - [Loader (formato .bin, API, teste)](./loader.md)
-- [TODO](./todo.md)
-- [Andamento - ve quem fez se precisar perguntar algo daquela coisa](./andamento.txt)

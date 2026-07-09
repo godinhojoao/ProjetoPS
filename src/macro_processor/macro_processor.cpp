@@ -119,7 +119,10 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         continue;
       }
 
-      if (!isValidInstruction) {
+      bool isLabel = !firstChunk.empty() && firstChunk.back() == ':';
+      if (isLabel) {
+        this->expandedCode.append(line + "\n");
+      } else if (!isValidInstruction) {
         throw std::runtime_error("nao é macro valida, nem instrucao valida");
       }
     }

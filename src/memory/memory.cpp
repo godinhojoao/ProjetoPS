@@ -5,28 +5,45 @@ uint8_t Memory::read(uint16_t addr) const
   return data[addr];
 }
 
-// false = error writing
 bool Memory::write(uint16_t addr, uint8_t value)
 {
-  // trying to write on code+data area
-  if (addr < loadedAreaEnd) {
+  if (addr < codeEnd) {
     return false;
   }
   data[addr] = value;
   return true;
 }
 
-uint32_t Memory::getLoadedAreaEnd() const
+bool Memory::stackWrite(uint16_t addr, uint8_t value)
 {
-  return loadedAreaEnd;
+  if (addr < dataEnd) {
+    return false;
+  }
+  data[addr] = value;
+  return true;
 }
 
-void Memory::setLoadedAreaEnd(uint32_t end)
+uint32_t Memory::getCodeEnd() const
 {
-  loadedAreaEnd = end;
+  return codeEnd;
 }
 
-void Memory::resetLoadedArea() {
-    // posteriormente dá pra fazer receber um end e ir zerando toda memória
-    loadedAreaEnd = 0;
+void Memory::setCodeEnd(uint32_t end)
+{
+  codeEnd = end;
+}
+
+uint32_t Memory::getDataEnd() const
+{
+  return dataEnd;
+}
+
+void Memory::setDataEnd(uint32_t end)
+{
+  dataEnd = end;
+}
+
+void Memory::resetSegments() {
+    codeEnd = 0;
+    dataEnd = 0;
 }

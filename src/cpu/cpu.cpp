@@ -323,16 +323,13 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
             auto hi = regs.first;
             auto lo = regs.second;
 
-            SP--; // -- because stack start on top of memory and grows toward bottom of mem.
-
-            if (!mem.write(SP, *hi)) {
+            SP--;
+            if (!mem.stackWrite(SP, *hi)) {
                 std::cout << "CPU: stack overflow\n";
                 return false;
             }
-
             SP--;
-
-            if (!mem.write(SP, *lo)) {
+            if (!mem.stackWrite(SP, *lo)) {
                 std::cout << "CPU: stack overflow\n";
                 return false;
             }
@@ -378,17 +375,13 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
         case OpcodeType::CALL_ADDR: {
             uint16_t returnAddr = PC + inst.bytesSize; // instrucao seguinte ao CALL
 
-            // empilha hi byte (SP-- antes de escrever, igual ao PUSH)
             SP--;
-
-            if (!mem.write(SP, static_cast<uint8_t>(returnAddr >> 8))) {
+            if (!mem.stackWrite(SP, static_cast<uint8_t>(returnAddr >> 8))) {
                 std::cout << "CPU: stack overflow (CALL)\n";
                 return false;
             }
-            // empilha lo byte
             SP--;
-
-            if (!mem.write(SP, static_cast<uint8_t>(returnAddr & 0xFF))){
+            if (!mem.stackWrite(SP, static_cast<uint8_t>(returnAddr & 0xFF))) {
                 std::cout << "CPU: stack overflow (CALL)\n";
                 return false;
             }

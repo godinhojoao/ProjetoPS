@@ -16,7 +16,7 @@ public:
     * @param  startAddr Endereço inicial de gravação(padrão 0x0000)
     * @return          true se carregou ao menos 1 byte; false em caso de erro.
     */
-    bool load(const std::string& binPath, uint16_t startAddr = 0x0000);
+    bool load(const std::string& binPath, uint16_t startAddr = 0x0000, uint32_t codeSize = 0);
     void run();
     bool step();
     void reset();

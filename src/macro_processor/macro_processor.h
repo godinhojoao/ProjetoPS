@@ -16,6 +16,9 @@ public:
   void appendCode(const std::string& code) {
     this->code += code + "\n";
   }
+  void setCode(const std::string& c) {
+    this->code = c;
+  }
   void pushParam(const std::string& param) {
     params.push_back(param);
   }

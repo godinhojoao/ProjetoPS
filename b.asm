@@ -20,4 +20,5 @@ NOP
 ADD_VALS;comentario
 ADD_VALS2 0x03, 0x02
 NOP  ;comentario
-HALT
+END:
+ HALT

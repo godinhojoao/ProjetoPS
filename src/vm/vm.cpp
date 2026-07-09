@@ -2,34 +2,29 @@
 #include "../loader/binary_loader.h"
 #include <iostream>
 
-bool VM::load(const std::string& binPath, uint16_t startAddr) {
+bool VM::load(const std::string& binPath, uint16_t startAddr, uint32_t codeSize) {
     reset(); //reseta cpu
     BinaryLoader loader;
 
-    // (not used) startAddr can be used to put a different .asm in memory at the same time.
-    // if not informed in load, it will be 0x0000.
-
-    uint32_t bytesLoaded = loader.load(binPath, mem, startAddr); // 64kb 2ˆ16 bytes = 65536 bytes
-    // if we use uint16_t we would have only 2^16 from 0 to 65535 but file size (bytes loaded) is from 1 to 65536
-    // this single number can overflow our uint16_t, and because of that this bytes loaded is uint32_t
+    uint32_t bytesLoaded = loader.load(binPath, mem, startAddr);
 
     if (bytesLoaded == 0) { return false; }
-    mem.setLoadedAreaEnd(bytesLoaded);
+    mem.setCodeEnd(codeSize > 0 ? codeSize : bytesLoaded);
+    mem.setDataEnd(bytesLoaded);
 
     std::cout << "VM: " << bytesLoaded << " bytes carregados de '" << binPath << "'\n";
     return true;
 }
 
 void VM::run() {
-    // read entire code from memory, decode instructions, and execute them on CPU
-    while (cpu.getPC() < mem.getLoadedAreaEnd()) {
+    while (cpu.getPC() < mem.getCodeEnd()) {
         Instruction inst = Decoder::decode(mem, cpu.getPC());
         if (!cpu.cycle(inst, mem)) break;
     }
 }
 
 bool VM::step() {
-    if (cpu.getPC() < mem.getLoadedAreaEnd()) {
+    if (cpu.getPC() < mem.getCodeEnd()) {
         Instruction inst = Decoder::decode(mem, cpu.getPC());
         return cpu.cycle(inst, mem);
     }
@@ -38,7 +33,7 @@ bool VM::step() {
 
 void VM::reset() {
     cpu.resetCpu();
-    mem.resetLoadedArea();
+    mem.resetSegments();
     return;
 }
 
@@ -76,5 +71,5 @@ VMState VM::getState() const {
 }
 
 bool VM::isLoaded() const {
-    return mem.getLoadedAreaEnd() > 0 ? true : false;
+    return mem.getDataEnd() > 0;
 }

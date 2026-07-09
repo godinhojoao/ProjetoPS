@@ -64,6 +64,6 @@ std::string Shared::trim(const std::string &text) {
     int start = 0;
     
     while (start < end && text[start] == ' ') start++;
-    while (start < end && text[end] == ' ') end--;
+    while (start < end && text[end - 1] == ' ') end--;
     return text.substr(start, end - start);
 }

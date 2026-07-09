@@ -6,7 +6,7 @@
 
 struct CPUState {
     uint8_t A, B, C, D, E, H, L, F;
-    uint16_t PC, SP;
+    uint16_t PC, SP, IX, IY;
 };
 
 class Memory;
@@ -16,7 +16,7 @@ class CPU
 public:
     uint16_t getPC() const;
     CPUState getState() const;
-    void setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP);
+    void setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP, uint16_t IX = 0, uint16_t IY = 0);
     void resetCpu();
     bool getFlag(uint8_t mask) const;
     bool cycle(const Instruction& inst, Memory& mem);
@@ -26,6 +26,8 @@ private:
     uint8_t F = 0;
     uint16_t PC = 0;
     uint16_t SP = VM_MEMORY_IN_BYTES - 1; // start on top of memory
+    uint16_t IX = 0;
+    uint16_t IY = 0;
     std::pair<uint8_t*, uint8_t*> getStackRegistersPair(uint8_t code); // (BC/DE/HL/AF)
 
     /**

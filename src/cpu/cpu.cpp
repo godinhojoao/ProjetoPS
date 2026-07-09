@@ -23,10 +23,10 @@ bool CPU::getFlag(uint8_t mask) const {
 }
 
 CPUState CPU::getState() const {
-    return { A, B, C, D, E, H, L, F, PC, SP };
+    return { A, B, C, D, E, H, L, F, PC, SP, IX, IY };
 }
 
-void CPU::setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP) {
+void CPU::setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_t H, uint8_t L, uint8_t F, uint16_t PC, uint16_t SP, uint16_t IX, uint16_t IY) {
     this->A = A;
     this->B = B;
     this->C = C;
@@ -37,6 +37,8 @@ void CPU::setState(uint8_t A, uint8_t B, uint8_t C, uint8_t D, uint8_t E, uint8_
     this->F = F;
     this->PC = PC;
     this->SP = SP;
+    this->IX = IX;
+    this->IY = IY;
 }
 
 void CPU::resetCpu() {
@@ -44,6 +46,8 @@ void CPU::resetCpu() {
     F = 0;
     PC = 0;
     SP = VM_MEMORY_IN_BYTES - 1;
+    IX = 0;
+    IY = 0;
 }
 
 uint8_t *CPU::getRegister8(uint8_t code)
@@ -410,6 +414,165 @@ bool CPU::cycle(const Instruction &inst, Memory &mem) {
         default: {
             std::cout << "CPU: instrucao invalida\n";
             return false;
+        }
+
+        // Instruções com endereçamento indexado (IX/IY)
+
+        // LD r, (IX+d)
+        case OpcodeType::LD_R_IX: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = IX + d;
+            *getRegister8(inst.destReg) = mem.read(addr);
+            break;
+        }
+
+        // LD r, (IY+d)
+        case OpcodeType::LD_R_IY: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = IY + d;
+            *getRegister8(inst.destReg) = mem.read(addr);
+            break;
+        }
+
+        // LD (IX+d), r
+        case OpcodeType::LD_IX_R: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = IX + d;
+            mem.write(addr, *getRegister8(inst.sourceReg));
+            break;
+        }
+
+        // LD (IY+d), r
+        case OpcodeType::LD_IY_R: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = IY + d;
+            mem.write(addr, *getRegister8(inst.sourceReg));
+            break;
+        }
+
+        // LD (IX+d), n
+        case OpcodeType::LD_IX_N: {
+            uint8_t d = (inst.operand >> 8) & 0xFF;
+            uint8_t n = inst.operand & 0xFF;
+            uint16_t addr = IX + static_cast<int8_t>(d);
+            mem.write(addr, n);
+            break;
+        }
+
+        // LD (IY+d), n
+        case OpcodeType::LD_IY_N: {
+            uint8_t d = (inst.operand >> 8) & 0xFF;
+            uint8_t n = inst.operand & 0xFF;
+            uint16_t addr = IY + static_cast<int8_t>(d);
+            mem.write(addr, n);
+            break;
+        }
+
+        // LD A, (nn)
+        case OpcodeType::LD_A_NN: {
+            A = mem.read(inst.operand);
+            break;
+        }
+
+        // LD (nn), A
+        case OpcodeType::LD_NN_A: {
+            mem.write(inst.operand, A);
+            break;
+        }
+
+        // ADD A, (IX+d)
+        case OpcodeType::ADD_A_IX:
+        case OpcodeType::ADD_A_IY: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = (inst.type == OpcodeType::ADD_A_IX) ? IX + d : IY + d;
+            uint8_t val = mem.read(addr);
+
+            uint16_t sum = A + val;
+            uint8_t result = static_cast<uint8_t>(sum);
+            setFlagMask(FLAG_S, (result & 0x80) != 0);
+            setFlagMask(FLAG_Z, result == 0);
+            setFlagMask(FLAG_H, ((A & 0x0F) + (val & 0x0F)) > 0x0F);
+            setFlagMask(FLAG_PV, (~(A ^ val) & (A ^ result) & 0x80) != 0);
+            setFlagMask(FLAG_N, false);
+            setFlagMask(FLAG_C, sum > 0xFF);
+            A = result;
+            break;
+        }
+
+        // SUB (IX+d) / SUB (IY+d)
+        case OpcodeType::SUB_IX:
+        case OpcodeType::SUB_IY: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = (inst.type == OpcodeType::SUB_IX) ? IX + d : IY + d;
+            uint8_t val = mem.read(addr);
+
+            uint16_t diff = A - val;
+            uint8_t result = static_cast<uint8_t>(diff);
+            setFlagMask(FLAG_S, (result & 0x80) != 0);
+            setFlagMask(FLAG_Z, result == 0);
+            setFlagMask(FLAG_H, (A & 0x0F) < (val & 0x0F));
+            setFlagMask(FLAG_PV, ((A ^ val) & (A ^ result) & 0x80) != 0);
+            setFlagMask(FLAG_N, true);
+            setFlagMask(FLAG_C, A < val);
+            A = result;
+            break;
+        }
+
+        // CP (IX+d) / CP (IY+d)
+        case OpcodeType::CP_IX:
+        case OpcodeType::CP_IY: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr = (inst.type == OpcodeType::CP_IX) ? IX + d : IY + d;
+            uint8_t val = mem.read(addr);
+
+            uint16_t diff = A - val;
+            uint8_t result = static_cast<uint8_t>(diff);
+            setFlagMask(FLAG_S, (result & 0x80) != 0);
+            setFlagMask(FLAG_Z, result == 0);
+            setFlagMask(FLAG_H, (A & 0x0F) < (val & 0x0F));
+            setFlagMask(FLAG_PV, ((A ^ val) & (A ^ result) & 0x80) != 0);
+            setFlagMask(FLAG_N, true);
+            setFlagMask(FLAG_C, A < val);
+            // CP não altera A, só as flags
+            break;
+        }
+
+        // AND/OR/XOR (IX+d) e (IY+d)
+        case OpcodeType::AND_IX:
+        case OpcodeType::AND_IY:
+        case OpcodeType::OR_IX:
+        case OpcodeType::OR_IY:
+        case OpcodeType::XOR_IX:
+        case OpcodeType::XOR_IY: {
+            int8_t d = static_cast<int8_t>(inst.operand & 0xFF);
+            uint16_t addr;
+            if (inst.type == OpcodeType::AND_IX || inst.type == OpcodeType::OR_IX || inst.type == OpcodeType::XOR_IX)
+                addr = IX + d;
+            else
+                addr = IY + d;
+            uint8_t val = mem.read(addr);
+
+            if (inst.type == OpcodeType::AND_IX || inst.type == OpcodeType::AND_IY) {
+                A &= val;
+                setFlagMask(FLAG_H, true);
+            } else if (inst.type == OpcodeType::OR_IX || inst.type == OpcodeType::OR_IY) {
+                A |= val;
+                setFlagMask(FLAG_H, false);
+            } else {
+                A ^= val;
+                setFlagMask(FLAG_H, false);
+            }
+
+            setFlagMask(FLAG_S, (A & 0x80) != 0);
+            setFlagMask(FLAG_Z, A == 0);
+            uint8_t p = A;
+            p ^= p >> 4;
+            p ^= p >> 2;
+            p ^= p >> 1;
+            setFlagMask(FLAG_PV, !(p & 1));
+            setFlagMask(FLAG_N, false);
+            setFlagMask(FLAG_C, false);
+            break;
         }
     } //end switch
 

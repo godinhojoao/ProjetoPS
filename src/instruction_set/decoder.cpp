@@ -46,6 +46,126 @@ Instruction Decoder::decode(const Memory& memory, uint16_t pc) {
             inst.bytesSize = 3;
             return inst;
 
+        // LD (nn), A
+        case 0x32:
+            inst.type = OpcodeType::LD_NN_A;
+            inst.operand = (memory.read(pc + 2) << 8) | memory.read(pc + 1);
+            inst.bytesSize = 3;
+            return inst;
+
+        // LD A, (nn)
+        case 0x3A:
+            inst.type = OpcodeType::LD_A_NN;
+            inst.operand = (memory.read(pc + 2) << 8) | memory.read(pc + 1);
+            inst.bytesSize = 3;
+            return inst;
+
+        // Prefixo DD -> instruções com IX
+        case 0xDD: {
+            uint8_t op2 = memory.read(pc + 1);
+            int8_t d = static_cast<int8_t>(memory.read(pc + 2));
+
+            // LD (IX+d), n  -> DD 36 d n (4 bytes)
+            if (op2 == 0x36) {
+                inst.type = OpcodeType::LD_IX_N;
+                inst.operand = (static_cast<uint16_t>(static_cast<uint8_t>(d)) << 8) | memory.read(pc + 3);
+                inst.bytesSize = 4;
+                return inst;
+            }
+
+            // LD (IX+d), r  -> DD 01110rrr d (3 bytes)
+            if ((op2 & 0b11111000) == 0b01110000 && (op2 & 0b111) != 0b110) {
+                inst.type = OpcodeType::LD_IX_R;
+                inst.sourceReg = op2 & 0b111;
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            // LD r, (IX+d)  -> DD 01rrr110 d (3 bytes)
+            if ((op2 & 0b11000111) == 0b01000110) {
+                inst.type = OpcodeType::LD_R_IX;
+                inst.destReg = (op2 >> 3) & 0b111;
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            // Aritméticas/Lógicas com (IX+d): ADD/SUB/AND/OR/XOR/CP
+            if ((op2 & 0b11000111) == 0b10000110) {
+                uint8_t aluOp = (op2 >> 3) & 0b111;
+                switch (aluOp) {
+                    case 0: inst.type = OpcodeType::ADD_A_IX; break;
+                    case 2: inst.type = OpcodeType::SUB_IX;   break;
+                    case 4: inst.type = OpcodeType::AND_IX;   break;
+                    case 5: inst.type = OpcodeType::XOR_IX;   break;
+                    case 6: inst.type = OpcodeType::OR_IX;    break;
+                    case 7: inst.type = OpcodeType::CP_IX;    break;
+                    default: inst.type = OpcodeType::UNKNOWN; break;
+                }
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            inst.type = OpcodeType::UNKNOWN;
+            inst.bytesSize = 2;
+            return inst;
+        }
+
+        // Prefixo FD -> instruções com IY (mesma lógica do DD)
+        case 0xFD: {
+            uint8_t op2 = memory.read(pc + 1);
+            int8_t d = static_cast<int8_t>(memory.read(pc + 2));
+
+            // LD (IY+d), n  -> FD 36 d n (4 bytes)
+            if (op2 == 0x36) {
+                inst.type = OpcodeType::LD_IY_N;
+                inst.operand = (static_cast<uint16_t>(static_cast<uint8_t>(d)) << 8) | memory.read(pc + 3);
+                inst.bytesSize = 4;
+                return inst;
+            }
+
+            // LD (IY+d), r  -> FD 01110rrr d (3 bytes)
+            if ((op2 & 0b11111000) == 0b01110000 && (op2 & 0b111) != 0b110) {
+                inst.type = OpcodeType::LD_IY_R;
+                inst.sourceReg = op2 & 0b111;
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            // LD r, (IY+d)  -> FD 01rrr110 d (3 bytes)
+            if ((op2 & 0b11000111) == 0b01000110) {
+                inst.type = OpcodeType::LD_R_IY;
+                inst.destReg = (op2 >> 3) & 0b111;
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            // Aritméticas/Lógicas com (IY+d)
+            if ((op2 & 0b11000111) == 0b10000110) {
+                uint8_t aluOp = (op2 >> 3) & 0b111;
+                switch (aluOp) {
+                    case 0: inst.type = OpcodeType::ADD_A_IY; break;
+                    case 2: inst.type = OpcodeType::SUB_IY;   break;
+                    case 4: inst.type = OpcodeType::AND_IY;   break;
+                    case 5: inst.type = OpcodeType::XOR_IY;   break;
+                    case 6: inst.type = OpcodeType::OR_IY;    break;
+                    case 7: inst.type = OpcodeType::CP_IY;    break;
+                    default: inst.type = OpcodeType::UNKNOWN; break;
+                }
+                inst.operand = static_cast<uint8_t>(d);
+                inst.bytesSize = 3;
+                return inst;
+            }
+
+            inst.type = OpcodeType::UNKNOWN;
+            inst.bytesSize = 2;
+            return inst;
+        }
+
         default:
             // LD r, r' | LD (HL), r | LD r, (HL)
             if ((opcode & 0b11000000) == 0b01000000) {

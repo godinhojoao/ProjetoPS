@@ -43,6 +43,28 @@ enum class OpcodeType : uint8_t {
     RET,
     PUSH_RP,
     POP_RP,
+    // Instruções com endereçamento indexado (IX/IY)
+    LD_R_IX,       // LD r, (IX+d)
+    LD_R_IY,       // LD r, (IY+d)
+    LD_IX_R,       // LD (IX+d), r
+    LD_IY_R,       // LD (IY+d), r
+    LD_IX_N,       // LD (IX+d), n
+    LD_IY_N,       // LD (IY+d), n
+    ADD_A_IX,      // ADD A, (IX+d)
+    ADD_A_IY,      // ADD A, (IY+d)
+    SUB_IX,        // SUB (IX+d)
+    SUB_IY,        // SUB (IY+d)
+    AND_IX,        // AND (IX+d)
+    AND_IY,        // AND (IY+d)
+    OR_IX,         // OR (IX+d)
+    OR_IY,         // OR (IY+d)
+    XOR_IX,        // XOR (IX+d)
+    XOR_IY,        // XOR (IY+d)
+    CP_IX,         // CP (IX+d)
+    CP_IY,         // CP (IY+d)
+    // Loads diretos
+    LD_A_NN,       // LD A, (nn)  — opcode 0x3A
+    LD_NN_A,       // LD (nn), A  — opcode 0x32
     UNKNOWN
 };
 

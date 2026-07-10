@@ -1,36 +1,8 @@
 #include "extref_resolver.h"
+#include "../shared/shared.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-
-// palavras-chave que identificam início de seções no formato .o
-static const std::string SECTION_KEYWORDS[] = {
-    "HEADER", "EXTDEF", "EXTREF", "REALOC", "CODE"
-};
-
-// verifica se uma linha é uma palavra-chave de seção
-static bool isSectionKeyword(const std::string& line) {
-    for (const auto& keyword : SECTION_KEYWORDS) {
-        if (line == keyword) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// remove espaços e tabulações no início e fim da string
-static std::string trimWhitespace(const std::string& text) {
-    size_t start = text.find_first_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
-
-    size_t end = text.find_last_not_of(" \t\r\n");
-    return text.substr(start, end - start + 1);
-}
-
-// converte string hexadecimal (ex: "0x0008" ou "8") para uint16_t
-static uint16_t parseAddress(const std::string& token) {
-    return static_cast<uint16_t>(std::stoul(token, nullptr, 0));
-}
 
 std::vector<ExtRef> ExtRefResolver::parseExtRefsFromFile(const std::string& objectFilePath) {
     std::vector<ExtRef> references;
@@ -44,7 +16,7 @@ std::vector<ExtRef> ExtRefResolver::parseExtRefsFromFile(const std::string& obje
     bool insideExtRef = false;
 
     while (std::getline(file, line)) {
-        line = trimWhitespace(line);
+        line = Shared::trim(line);
 
         // ignora linhas vazias e comentários
         if (line.empty() || line[0] == ';') {
@@ -58,7 +30,7 @@ std::vector<ExtRef> ExtRefResolver::parseExtRefsFromFile(const std::string& obje
         }
 
         // se estamos dentro de extref e encontramos outra seção, paramos
-        if (insideExtRef && isSectionKeyword(line)) {
+        if (insideExtRef && Shared::isSectionKeyword(line)) {
             break;
         }
 
@@ -73,7 +45,7 @@ std::vector<ExtRef> ExtRefResolver::parseExtRefsFromFile(const std::string& obje
                 
                 std::string offsetToken;
                 while (stream >> offsetToken) {
-                    ref.offsets.push_back(parseAddress(offsetToken));
+                    ref.offsets.push_back(Shared::parseAddress(offsetToken));
                 }
                 
                 references.push_back(ref);

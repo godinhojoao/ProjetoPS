@@ -1,5 +1,6 @@
 #include "shared.h"
 #include <sstream>
+#include <algorithm>
 
 std::vector<std::string> Shared::split(std::string text, char spliter)
 {
@@ -59,11 +60,36 @@ std::string Shared::trim(const std::string &text) {
 
     size_t preComment = text.find(';');
     bool existComment = (preComment != std::string::npos);
+    size_t end = existComment ? preComment : text.size();
 
-    int end = existComment? preComment : text.size();
-    int start = 0;
-    
-    while (start < end && text[start] == ' ') start++;
-    while (start < end && text[end - 1] == ' ') end--;
-    return text.substr(start, end - start);
+    // Extrai a parte sem comentários
+    std::string noComment = text.substr(0, end);
+
+    // Remove whitespaces (\r, \n, \t, espaços) das extremidades
+    size_t startIdx = noComment.find_first_not_of(" \t\r\n");
+    if (startIdx == std::string::npos) return "";
+
+    size_t endIdx = noComment.find_last_not_of(" \t\r\n");
+    return noComment.substr(startIdx, endIdx - startIdx + 1);
+}
+
+uint16_t Shared::parseAddress(const std::string &token) {
+    return static_cast<uint16_t>(std::stoul(token, nullptr, 0));
+}
+
+bool Shared::isSectionKeyword(const std::string &line) {
+    static const std::string SECTION_KEYWORDS[] = {
+        "HEADER", "EXTDEF", "EXTREF", "REALOC", "CODE"
+    };
+    for (const auto& keyword : SECTION_KEYWORDS) {
+        if (line == keyword) {
+            return true;
+        }
+    }
+    return false;
+}
+
+std::string Shared::toUpper(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+    return s;
 }

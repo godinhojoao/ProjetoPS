@@ -1,5 +1,7 @@
+#pragma once
 #include <vector>
 #include <string>
+#include <cstdint>
 
 class Shared
 {
@@ -11,4 +13,7 @@ public:
     const std::vector<std::string> &args
   );
   static std::string trim(const std::string &text);
+  static uint16_t parseAddress(const std::string &token);
+  static bool isSectionKeyword(const std::string &line);
+  static std::string toUpper(std::string s);
 };

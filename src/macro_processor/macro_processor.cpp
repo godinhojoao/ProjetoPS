@@ -36,7 +36,6 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
   // 1. reading line by line and processing without holding entire file content
   std::string line;
-  bool isReadingMacro = false;
   bool hasFinishedMacroRead = false;
   MacroInstruction instruction;
   MACRO_READING_STATE currMacroReadingState = MACRO_NAME;
@@ -48,7 +47,10 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     //std::cout << "line->" << line <<"\n";
     if (line.size() == 0) continue;
 
-    if (!isReadingMacro && line.find(".endm") == 0) {
+    std::cout << " Count:  " << this->openMacros << "\n";
+    std::cout << " Line:  " << line << "\n";
+
+    if (!this->isReadingMacro && line.find(".endm") == 0) {
       throw std::runtime_error("Nao pode fechar macro que nao foi aberta");
     }
 
@@ -57,8 +59,10 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
 
     // reading macro
-    if (line.find(".macro") == 0 && !isReadingMacro) {
-      isReadingMacro = true;
+    if (line.find(".macro") == 0 && !this->isReadingMacro) {
+      this->openM();
+      std::cout << "Abriu" << "\n";
+      std::cout << "ABCount:  " << this->openMacros << "\n";
       std::vector<std::string> splittedResult = Shared::split(line, ' ');
 
       for (int i = 0; i < splittedResult.size(); ++i)
@@ -84,8 +88,10 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       continue;
     }
 
-    if (line.find(".endm") == 0 && isReadingMacro) {
-      isReadingMacro = false;
+    if (line.find(".endm") == 0 && this->isReadingMacro) {
+      this->closeM();
+      std::cout << "Fechou" << "\n";
+std::cout << "FCount:  " << this->openMacros << "\n";
       this->macroInstructions.emplace(instruction.getLabel(), instruction);
       instruction = MacroInstruction{};
       currMacroReadingState = MACRO_NAME;
@@ -96,7 +102,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       instruction.appendCode(line);
     }
 
-    hasFinishedMacroRead = !isReadingMacro && line.find(".macro") != 0;
+    hasFinishedMacroRead = !this->isReadingMacro && line.find(".macro") != 0;
 
     // reading code
     if (hasFinishedMacroRead) {
@@ -128,7 +134,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
   }
 
-  if(isReadingMacro) {
+  if(this->isReadingMacro) {
     throw std::runtime_error("abriu macro e nao fechou");
   }
   inFile.close();

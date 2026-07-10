@@ -37,6 +37,7 @@ private:
   std::string label;
   std::string code;
   std::vector<std::string> params;
+
 };
 
 class MacroProcessor
@@ -75,5 +76,17 @@ private:
   };
   std::string expandedCode;
   std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
+
+  // controle de fluxo
+  bool isReadingMacro = false;
+  int openMacros = 0;
+  void openM(){
+    isReadingMacro = true;
+    openMacros++;
+  }
+  void closeM(){
+    openMacros--;
+    isReadingMacro = openMacros > 0;
+  }
 };
 

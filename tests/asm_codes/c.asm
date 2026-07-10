@@ -1,7 +1,12 @@
-.macro ADD_VALS2 p1, p2
-  .macro ADD_VALS3
-     HLT
+.macro ADD1
+  NOP
+  .macro ADD2
+    LD C, 0x05
   .endm
+
+  ADD2
+  HLT
 .endm
 
+ADD1
 

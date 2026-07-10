@@ -78,15 +78,25 @@ private:
   std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
 
   // controle de fluxo
+  std::stack<MacroInstruction> macroInstructionsStack;
+
   bool isReadingMacro = false;
   int openMacros = 0;
+  MacroInstruction& current(){
+    return macroInstructionsStack.top();
+  }
   void openM(){
     isReadingMacro = true;
     openMacros++;
+    macroInstructionsStack.push(MacroInstruction{});
+    std::cout << "openM this->openMacros:  " << this->openMacros << "\n";
   }
   void closeM(){
+    this->macroInstructions.emplace(current().getLabel(), current());
+    macroInstructionsStack.pop();
     openMacros--;
     isReadingMacro = openMacros > 0;
+    std::cout << "closeM this->openMacros:  " << this->openMacros << "\n";
   }
 };
 

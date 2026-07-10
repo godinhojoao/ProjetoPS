@@ -17,6 +17,19 @@ public:
     * @return          true se carregou ao menos 1 byte; false em caso de erro.
     */
     bool load(const std::string& binPath, uint16_t startAddr = 0x0000, uint32_t codeSize = 0);
+
+    /**
+    * @brief  Carrega um arquivo objeto .o realocavel na memoria da VM.
+    *         Diferente de load(), aqui os enderecos absolutos do codigo (alvos de
+    *         JP/CALL) sao ajustados somando loadAddr, conforme a tabela REALOC do
+    *         .o. O PC fica apontando para o inicio do modulo realocado.
+    *
+    * @param  objPath   Caminho do .o gerado pelo montador/ligador.
+    * @param  loadAddr  Endereco inicial de carga (padrao 0x0000).
+    * @return           true se carregou ao menos 1 byte; false em caso de erro.
+    */
+    bool loadObject(const std::string& objPath, uint16_t loadAddr = 0x0000);
+
     void run();
     bool step();
     void reset();

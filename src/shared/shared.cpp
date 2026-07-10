@@ -1,6 +1,7 @@
 #include "shared.h"
 #include <sstream>
 #include <algorithm>
+#include <exception>
 
 std::vector<std::string> Shared::split(std::string text, char spliter)
 {
@@ -77,16 +78,28 @@ uint16_t Shared::parseAddress(const std::string &token) {
     return static_cast<uint16_t>(std::stoul(token, nullptr, 0));
 }
 
+ObjSection Shared::toObjSection(const std::string &line) {
+    if (line == "HEADER") return ObjSection::Header;
+    if (line == "EXTDEF") return ObjSection::ExtDef;
+    if (line == "EXTREF") return ObjSection::ExtRef;
+    if (line == "REALOC") return ObjSection::Realoc;
+    if (line == "CODE")   return ObjSection::Code;
+    return ObjSection::None;
+}
+
 bool Shared::isSectionKeyword(const std::string &line) {
-    static const std::string SECTION_KEYWORDS[] = {
-        "HEADER", "EXTDEF", "EXTREF", "REALOC", "CODE"
-    };
-    for (const auto& keyword : SECTION_KEYWORDS) {
-        if (line == keyword) {
-            return true;
-        }
+    return toObjSection(line) != ObjSection::None;
+}
+
+bool Shared::tryParseNumber(const std::string &token, int base, unsigned long &out) {
+    try {
+        size_t consumed = 0;
+        out = std::stoul(token, &consumed, base);
+        // rejeita lixo grudado no numero (ex: "12abc")
+        return consumed == token.size();
+    } catch (const std::exception &) {
+        return false;
     }
-    return false;
 }
 
 std::string Shared::toUpper(std::string s) {

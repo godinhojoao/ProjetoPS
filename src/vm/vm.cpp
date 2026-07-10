@@ -1,5 +1,6 @@
 #include "vm.h"
 #include "../loader/binary_loader.h"
+#include "../loader/object_loader.h"
 #include <iostream>
 
 bool VM::load(const std::string& binPath, uint16_t startAddr, uint32_t codeSize) {
@@ -9,10 +10,33 @@ bool VM::load(const std::string& binPath, uint16_t startAddr, uint32_t codeSize)
     uint32_t bytesLoaded = loader.load(binPath, mem, startAddr);
 
     if (bytesLoaded == 0) { return false; }
-    mem.setCodeEnd(codeSize > 0 ? codeSize : bytesLoaded);
-    mem.setDataEnd(bytesLoaded);
+
+    // os limites de segmento e o PC sao absolutos: quando startAddr != 0 o codigo
+    // comeca em startAddr, nao em 0x0000
+    mem.setCodeEnd(startAddr + (codeSize > 0 ? codeSize : bytesLoaded));
+    mem.setDataEnd(startAddr + bytesLoaded);
+    cpu.setPC(startAddr);
 
     std::cout << "VM: " << bytesLoaded << " bytes carregados de '" << binPath << "'\n";
+    return true;
+}
+
+bool VM::loadObject(const std::string& objPath, uint16_t loadAddr) {
+    reset(); //reseta cpu
+
+    // reset() zera os segmentos, entao Memory::write aceita a escrita do loader.
+    // setCodeEnd so depois da carga, senao ele barra o proprio codigo sendo gravado
+    ObjectLoader loader;
+    uint32_t bytesLoaded = loader.load(objPath, mem, loadAddr);
+
+    if (bytesLoaded == 0) { return false; }
+
+    mem.setCodeEnd(loadAddr + bytesLoaded);
+    mem.setDataEnd(loadAddr + bytesLoaded);
+    cpu.setPC(loadAddr); //entry point realocado
+
+    std::cout << "VM: " << bytesLoaded << " bytes de '" << objPath
+              << "' carregados e realocados em 0x" << std::hex << loadAddr << std::dec << "\n";
     return true;
 }
 

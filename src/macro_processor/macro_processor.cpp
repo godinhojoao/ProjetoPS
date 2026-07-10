@@ -5,7 +5,7 @@
 
 enum MACRO_READING_STATE
 {
-  LABEL = 0,
+  MACRO_NAME = 0,
   PARAM = 1,
   CODE = 2
 };
@@ -39,7 +39,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
   bool isReadingMacro = false;
   bool hasFinishedMacroRead = false;
   MacroInstruction instruction;
-  MACRO_READING_STATE currMacroReadingState = LABEL;
+  MACRO_READING_STATE currMacroReadingState = MACRO_NAME;
 
   while (std::getline(inFile, line))
   {
@@ -64,7 +64,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       for (int i = 0; i < splittedResult.size(); ++i)
       {
         std::string currChunk = splittedResult[i];
-        if (currMacroReadingState == LABEL && i == 1)
+        if (currMacroReadingState == MACRO_NAME && i == 1)
         {
           instruction.setLabel(currChunk);
           bool hasParams = splittedResult.size() > 2;
@@ -88,7 +88,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       isReadingMacro = false;
       this->macroInstructions.emplace(instruction.getLabel(), instruction);
       instruction = MacroInstruction{};
-      currMacroReadingState = LABEL;
+      currMacroReadingState = MACRO_NAME;
       continue;
     }
 

@@ -38,6 +38,13 @@ TEST_LINKER_EXTREF_SRC = tests/linker_extref_test.cpp \
                          src/shared/shared.cpp
 TEST_LINKER_EXTREF_OUT = test_linker_extref
 
+TEST_LINKER_SRC = tests/linker_test.cpp \
+                  src/linker/linker.cpp \
+                  src/linker/extref_resolver.cpp \
+                  src/linker/global_symbol_table.cpp \
+                  src/shared/shared.cpp
+TEST_LINKER_OUT = test_linker
+
 all:
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
@@ -60,5 +67,9 @@ test-linker-extref:
 	$(CXX) $(CXXFLAGS) $(TEST_LINKER_EXTREF_SRC) -o $(TEST_LINKER_EXTREF_OUT)
 	./$(TEST_LINKER_EXTREF_OUT)
 
+test-linker:
+	$(CXX) $(CXXFLAGS) $(TEST_LINKER_SRC) -o $(TEST_LINKER_OUT)
+	./$(TEST_LINKER_OUT)
+
 clean:
-	rm -f $(OUT) $(TEST_LOADER_OUT) $(TEST_OBJECT_LOADER_OUT) $(TEST_LINKER_GTS_OUT) $(TEST_LINKER_EXTREF_OUT)
+	rm -f $(OUT) $(TEST_LOADER_OUT) $(TEST_OBJECT_LOADER_OUT) $(TEST_LINKER_GTS_OUT) $(TEST_LINKER_EXTREF_OUT) $(TEST_LINKER_OUT)

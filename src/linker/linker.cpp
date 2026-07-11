@@ -224,7 +224,6 @@ bool Linker::link(const std::vector<std::string>& inputPaths, const std::string&
     GlobalSymbolTable gts;
     uint16_t currentOffset = 0;
     
-    // Passo 1: Calcular offsets base para cada módulo e registrar na GTS
     std::vector<uint16_t> moduleOffsets;
     for (const auto& mod : modules) {
         moduleOffsets.push_back(currentOffset);
@@ -239,16 +238,14 @@ bool Linker::link(const std::vector<std::string>& inputPaths, const std::string&
         currentOffset += mod.size;
     }
 
-    // Passo 2: Resolver EXTREFs de todos os módulos e realocar suas seções locais
     LinkerObjectFile outputObj;
     outputObj.moduleName = "linked_output";
-    outputObj.size = currentOffset; // O tamanho combinado
+    outputObj.size = currentOffset;
     
     for (size_t i = 0; i < modules.size(); ++i) {
         auto& mod = modules[i];
         uint16_t baseOffset = moduleOffsets[i];
         
-        // Resolver EXTREFs com os endereços absolutos presentes na GTS
         std::vector<std::string> errors;
         if (!ExtRefResolver::resolve(mod.extRefs, gts, mod.code, errors)) {
             for (const auto& err : errors) {
@@ -257,22 +254,17 @@ bool Linker::link(const std::vector<std::string>& inputPaths, const std::string&
             return false;
         }
         
-        // Ajustar endereços de offset de REALOC (adicionando a base do módulo)
         for (uint16_t reloc : mod.relocs) {
             outputObj.relocs.push_back(reloc + baseOffset);
         }
         
-        // Concatenar os bytes de código do módulo já corrigido ao executável final
         outputObj.code.insert(outputObj.code.end(), mod.code.begin(), mod.code.end());
     }
     
-    // Todos os símbolos foram consolidados. Adicioná-los aos EXTDEFs do executável.
-    // Útil se esse arquivo ainda for servir de entrada para outra ligação (Library).
     auto globalTable = gts.getTable();
     for (const auto& pair : globalTable) {
         outputObj.extDefs.push_back({pair.first, pair.second});
     }
 
-    // Passo 3: Escrever arquivo resultante unificado no disco
     return writeObj(outputPath, outputObj);
 }

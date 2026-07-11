@@ -22,14 +22,11 @@ struct LinkerObjectFile {
 
 class Linker {
 public:
-    // Mantido para retrocompatibilidade / uso futuro, caso necessário
     static std::vector<RelocationEntry> scan(const uint8_t* code, uint32_t codeSize);
 
-    // Lê e escreve arquivos objeto ASCII (.o)
     static bool readObj(const std::string& path, LinkerObjectFile& objOut);
     static bool writeObj(const std::string& path, const LinkerObjectFile& obj);
 
-    // Une múltiplos arquivos .o, resolve EXTREF com GTS, calcula offsets, e aplica realocações
     static bool link(const std::vector<std::string>& inputPaths, const std::string& outputPath);
 };
 

@@ -1,5 +1,7 @@
 #include "shared.h"
 #include <sstream>
+#include <algorithm>
+#include <exception>
 
 std::vector<std::string> Shared::split(std::string text, char spliter)
 {
@@ -59,11 +61,48 @@ std::string Shared::trim(const std::string &text) {
 
     size_t preComment = text.find(';');
     bool existComment = (preComment != std::string::npos);
+    size_t end = existComment ? preComment : text.size();
 
-    int end = existComment? preComment : text.size();
-    int start = 0;
-    
-    while (start < end && text[start] == ' ') start++;
-    while (start < end && text[end - 1] == ' ') end--;
-    return text.substr(start, end - start);
+    // Extrai a parte sem comentários
+    std::string noComment = text.substr(0, end);
+
+    // Remove whitespaces (\r, \n, \t, espaços) das extremidades
+    size_t startIdx = noComment.find_first_not_of(" \t\r\n");
+    if (startIdx == std::string::npos) return "";
+
+    size_t endIdx = noComment.find_last_not_of(" \t\r\n");
+    return noComment.substr(startIdx, endIdx - startIdx + 1);
+}
+
+uint16_t Shared::parseAddress(const std::string &token) {
+    return static_cast<uint16_t>(std::stoul(token, nullptr, 0));
+}
+
+ObjSection Shared::toObjSection(const std::string &line) {
+    if (line == "HEADER") return ObjSection::Header;
+    if (line == "EXTDEF") return ObjSection::ExtDef;
+    if (line == "EXTREF") return ObjSection::ExtRef;
+    if (line == "REALOC") return ObjSection::Realoc;
+    if (line == "CODE")   return ObjSection::Code;
+    return ObjSection::None;
+}
+
+bool Shared::isSectionKeyword(const std::string &line) {
+    return toObjSection(line) != ObjSection::None;
+}
+
+bool Shared::tryParseNumber(const std::string &token, int base, unsigned long &out) {
+    try {
+        size_t consumed = 0;
+        out = std::stoul(token, &consumed, base);
+        // rejeita lixo grudado no numero (ex: "12abc")
+        return consumed == token.size();
+    } catch (const std::exception &) {
+        return false;
+    }
+}
+
+std::string Shared::toUpper(std::string s) {
+    std::transform(s.begin(), s.end(), s.begin(), ::toupper);
+    return s;
 }

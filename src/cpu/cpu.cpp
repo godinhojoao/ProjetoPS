@@ -11,6 +11,8 @@ e onde as instruções realmente mexem nos dados
 
 uint16_t CPU::getPC() const { return PC; }
 
+void CPU::setPC(uint16_t pc) { PC = pc; }
+
 std::pair<uint8_t *, uint8_t *> CPU::getStackRegistersPair(uint8_t code)
 {
   uint8_t *hi[] = {&B, &D, &H, &A};

@@ -7,40 +7,10 @@ de referências externas (EXTREF) feita pelo Inácio.
 */
 
 #include "global_symbol_table.h"
+#include "../shared/shared.h"
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <algorithm>
-
-// palavras-chave que identificam início de seções no formato .o
-static const std::string SECTION_KEYWORDS[] = {
-    "HEADER", "EXTDEF", "EXTREF", "REALOC", "CODE"
-};
-
-// verifica se uma linha é uma palavra-chave de seção
-static bool isSectionKeyword(const std::string& line) {
-    for (const auto& keyword : SECTION_KEYWORDS) {
-        if (line == keyword) {
-            return true;
-        }
-    }
-    return false;
-}
-
-// remove espaços e tabulações no início e fim da string
-static std::string trimWhitespace(const std::string& text) {
-    size_t start = text.find_first_not_of(" \t\r\n");
-    if (start == std::string::npos) return "";
-
-    size_t end = text.find_last_not_of(" \t\r\n");
-    return text.substr(start, end - start + 1);
-}
-
-// converte string hexadecimal (ex: "0x0008" ou "8") para uint16_t
-static uint16_t parseAddress(const std::string& token) {
-    // stoul trata automaticamente o prefixo 0x quando base=0
-    return static_cast<uint16_t>(std::stoul(token, nullptr, 0));
-}
 
 void GlobalSymbolTable::registerModuleSymbols(
     const std::string& moduleName,
@@ -86,7 +56,7 @@ std::vector<ExtDef> GlobalSymbolTable::parseExtDefsFromFile(const std::string& o
     bool insideExtDef = false;
 
     while (std::getline(file, line)) {
-        line = trimWhitespace(line);
+        line = Shared::trim(line);
 
         // ignora linhas vazias e comentários
         if (line.empty() || line[0] == ';') {
@@ -100,7 +70,7 @@ std::vector<ExtDef> GlobalSymbolTable::parseExtDefsFromFile(const std::string& o
         }
 
         // se estamos dentro de EXTDEF e encontramos outra seção, paramos
-        if (insideExtDef && isSectionKeyword(line)) {
+        if (insideExtDef && Shared::isSectionKeyword(line)) {
             break;
         }
 
@@ -113,7 +83,7 @@ std::vector<ExtDef> GlobalSymbolTable::parseExtDefsFromFile(const std::string& o
             if (stream >> name >> addressToken) {
                 ExtDef def;
                 def.symbolName = name;
-                def.relativeAddress = parseAddress(addressToken);
+                def.relativeAddress = Shared::parseAddress(addressToken);
                 definitions.push_back(def);
             }
         }

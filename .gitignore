@@ -5,3 +5,5 @@ vm.exe
 build-*/
 CMakeFiles/
 CMakeCache.txt
+test_*
+*.o

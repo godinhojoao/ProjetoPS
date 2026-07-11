@@ -91,18 +91,27 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
 
     if (currMacroReadingState == CODE && this->isReadingMacro) {
-      // precisamos expandir macro aqui (even if is inside another macro)
-      this->current().appendCode(line);
+      std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
+      std::string firstChunk = splittedCodeLine[0];
+
+      auto it = this->macroInstructions.find(firstChunk);
+      bool isMacroInstruction = it != this->macroInstructions.end();
+      MacroInstruction currMacroInstruction;
+      if (isMacroInstruction) {
+        currMacroInstruction = it->second;
+        std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
+
+        std::string expandedCode = this->expandMacro(currMacroInstruction, macroArguments);
+        this->current().appendCode(expandedCode);
+      } else {
+        this->current().appendCode(line);
+      }
     }
 
     hasFinishedMacroRead = !this->isReadingMacro && line.find(".macro") != 0;
 
     // reading code
     if (hasFinishedMacroRead) {
-      // debug
-      for (const auto& [k, v] : macroInstructions) {
-        std::cout << "DEBUG Label: " << k << "\nCode:\n" << v.getCode() << '\n';
-      }
       std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
       std::string firstChunk = splittedCodeLine[0];
 
@@ -112,8 +121,9 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       }
 
       auto it = this->macroInstructions.find(firstChunk);
+      bool isMacroInstruction = it != this->macroInstructions.end();
       MacroInstruction currMacroInstruction;
-      if (it != this->macroInstructions.end()) {
+      if (isMacroInstruction) {
         currMacroInstruction = it->second;
         std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
 

@@ -1,5 +1,6 @@
 #include <string>
 #include <vector>
+#include <stack>
 #include <cstdint>
 #include <iostream>
 #include <fstream>

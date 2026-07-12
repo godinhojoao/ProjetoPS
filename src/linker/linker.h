@@ -7,10 +7,6 @@
 #include "global_symbol_table.h"
 #include "extref_resolver.h"
 
-struct RelocationEntry {
-    uint16_t offset;
-};
-
 struct LinkerObjectFile {
     std::string moduleName;
     uint16_t size = 0;
@@ -22,8 +18,6 @@ struct LinkerObjectFile {
 
 class Linker {
 public:
-    static std::vector<RelocationEntry> scan(const uint8_t* code, uint32_t codeSize);
-
     static bool readObj(const std::string& path, LinkerObjectFile& objOut);
     static bool writeObj(const std::string& path, const LinkerObjectFile& obj);
 

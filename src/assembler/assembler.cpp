@@ -1,6 +1,7 @@
 #include "assembler.h"
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -95,6 +96,31 @@ static uint16_t resolveValue(const std::string& op, const std::unordered_map<std
         return 0;
     }
 }
+
+uint16_t Assembler::resolveValueAndTrack(const std::string& rawOp, uint16_t offset, std::vector<std::string>& errors, int lineNum, bool is16Bit) {
+    std::string op = Shared::trim(rawOp);
+    if (externalSymbolsSet.count(op)) {
+        if (is16Bit) {
+            externalReferences[op].push_back(offset);
+        }
+        return 0;
+    }
+    if (symbolTable.count(op)) {
+        if (is16Bit && !constantSymbols.count(op)) {
+            relocationOffsets.push_back(offset);
+        }
+        return symbolTable.at(op);
+    }
+    try {
+        if (op.size() > 2 && op[0] == '0' && (op[1] == 'x' || op[1] == 'X')) {
+            return (uint16_t)std::stoi(op, nullptr, 16);
+        }
+        return (uint16_t)std::stoi(op, nullptr, 0);
+    } catch (...) {
+        errors.push_back("Linha " + std::to_string(lineNum) + ": Símbolo indefinido ou valor inválido '" + op + "'");
+        return 0;
+    }
+}
 // Fim auxiliares
 
 // parser de linha
@@ -152,8 +178,10 @@ AsmLine Assembler::parseLine(const std::string& rawLine, int lineNumber) const {
 //   Indireto IX/IY -> LD r,(IX+d) / LD r,(IY+d)  (3 bytes)
 //   Indexado       -> LD (IX+d),r / ADD A,(IX+d)  (3 bytes)
 uint8_t Assembler::calcSize(const std::string& operation, const std::string& operands) const {
-    // DIRETIVAS DE MONTAGEM (PSEUDO-INSTRUÇÕES)
-    if (operation == "ORG" || operation == "EQU" || operation == "END") {
+    if (operation == "ORG" || operation == "EQU" || operation == "END" ||
+        operation == "PUBLIC" || operation == "GLOBAL" || operation == "GLOB" || operation == "EXTDEF" ||
+        operation == "EXTERN" || operation == "EXT" || operation == "EXTREF" ||
+        operation == "NAME" || operation == "MODULE" || operation == "IDENT") {
         return 0; // Não geram código de máquina diretamente
     }
     if (operation == "DB" || operation == "CONST")  // define byte
@@ -283,6 +311,15 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
     symbolTable.clear();
     errors.clear();
 
+    moduleName = "main";
+    publicSymbols.clear();
+    publicSymbolsSet.clear();
+    externalSymbols.clear();
+    externalSymbolsSet.clear();
+    constantSymbols.clear();
+    relocationOffsets.clear();
+    externalReferences.clear();
+
     std::istringstream stream(asmCode);
     std::string rawLine;
     int lineNumber = 0;
@@ -295,6 +332,45 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
 
         // Ignora linhas vazias ou só com comentário
         if (asmLine.operation.empty() && asmLine.label.empty()) continue;
+
+        // Processamento de diretivas de modularidade/metadados
+        if (asmLine.operation == "NAME" || asmLine.operation == "MODULE" || asmLine.operation == "IDENT") {
+            moduleName = asmLine.operands;
+            lines.push_back(asmLine);
+            continue;
+        }
+
+        if (asmLine.operation == "PUBLIC" || asmLine.operation == "GLOBAL" || asmLine.operation == "GLOB" || asmLine.operation == "EXTDEF") {
+            std::stringstream ss(asmLine.operands);
+            std::string sym;
+            while (std::getline(ss, sym, ',')) {
+                sym = Shared::trim(sym);
+                if (!sym.empty()) {
+                    publicSymbols.push_back(sym);
+                    publicSymbolsSet.insert(sym);
+                }
+            }
+            lines.push_back(asmLine);
+            continue;
+        }
+
+        if (asmLine.operation == "EXTERN" || asmLine.operation == "EXT" || asmLine.operation == "EXTREF") {
+            std::stringstream ss(asmLine.operands);
+            std::string sym;
+            while (std::getline(ss, sym, ',')) {
+                sym = Shared::trim(sym);
+                if (!sym.empty()) {
+                    if (symbolTable.count(sym)) {
+                        errors.push_back("Linha " + std::to_string(lineNumber) + ": conflito de simbolo '" + sym + "' ja definido localmente");
+                        return false;
+                    }
+                    externalSymbols.push_back(sym);
+                    externalSymbolsSet.insert(sym);
+                }
+            }
+            lines.push_back(asmLine);
+            continue;
+        }
 
         // Se for a diretiva ORG, atualiza o LC imediatamente antes de processar rótulos/endereços
         // porque ORG define o endereço de todos os rótulos seguintes
@@ -312,6 +388,11 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
 
         // Registra o rótulo na tabela de símbolos
         if (!asmLine.label.empty()) {
+            if (externalSymbolsSet.count(asmLine.label)) {
+                errors.push_back("Linha " + std::to_string(lineNumber) +
+                                 ": conflito de rotulo '" + asmLine.label + "' ja declarado como EXTERN");
+                return false;
+            }
             if (symbolTable.count(asmLine.label)) {
                 errors.push_back("Linha " + std::to_string(lineNumber) +
                                  ": rotulo duplicado '" + asmLine.label + "'");
@@ -322,6 +403,7 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
             if (asmLine.operation == "EQU") {
                 try {
                     symbolTable[asmLine.label] = resolveValue(asmLine.operands, symbolTable, errors, lineNumber);
+                    constantSymbols.insert(asmLine.label); // marca como constante
                 } catch (...) {
                     errors.push_back("Linha " + std::to_string(lineNumber) + ": Valor inválido para EQU '" + asmLine.operands + "'");
                     return false;
@@ -357,6 +439,13 @@ bool Assembler::firstPass(const std::string& asmCode, uint16_t startAddress) {
         lines.push_back(asmLine);
     }
 
+    // Valida se todos os símbolos públicos declarados foram definidos
+    for (const auto& pub : publicSymbols) {
+        if (!symbolTable.count(pub)) {
+            errors.push_back("Erro: Simbolo publico '" + pub + "' declarado mas nao definido no codigo");
+        }
+    }
+
     return errors.empty();
 }
 
@@ -387,7 +476,8 @@ std::string Assembler::secondPass() {
         }
 
         // --- PROCESSAMENTO DE DIRETIVAS DE MONTAGEM ---
-        if (op == "ORG" || op == "EQU") {
+        if (op == "ORG" || op == "EQU" || op == "PUBLIC" || op == "GLOBAL" || op == "GLOB" || op == "EXTDEF" ||
+            op == "EXTERN" || op == "EXT" || op == "EXTREF" || op == "NAME" || op == "MODULE" || op == "IDENT") {
             continue; // Apenas diretivas de controle, ignoradas no output binário direto
         }
         if (op == "END") {
@@ -397,7 +487,8 @@ std::string Assembler::secondPass() {
             std::stringstream ss(args);
             std::string token;
             while (std::getline(ss, token, ',')) {
-                uint16_t val = resolveValue(Shared::trim(token), symbolTable, errors, line.lineNumber);
+                uint16_t offset = initialAddress + output.size();
+                uint16_t val = resolveValueAndTrack(token, offset, errors, line.lineNumber, false);
                 output.push_back(static_cast<uint8_t>(val & 0xFF));
             }
             continue;
@@ -406,7 +497,8 @@ std::string Assembler::secondPass() {
             std::stringstream ss(args);
             std::string token;
             while (std::getline(ss, token, ',')) {
-                uint16_t val = resolveValue(Shared::trim(token), symbolTable, errors, line.lineNumber);
+                uint16_t offset = initialAddress + output.size();
+                uint16_t val = resolveValueAndTrack(token, offset, errors, line.lineNumber, true);
                 output.push_back(val & 0xFF);
                 output.push_back((val >> 8) & 0xFF);
             }
@@ -458,7 +550,8 @@ std::string Assembler::secondPass() {
                         output.push_back(prefix);
                         output.push_back(0x36);
                         output.push_back((uint8_t)extractOffset(idxStr, errors, line.lineNumber));
-                        output.push_back((uint8_t)resolveValue(regStr, symbolTable, errors, line.lineNumber));
+                        uint16_t offset = initialAddress + output.size();
+                        output.push_back((uint8_t)resolveValueAndTrack(regStr, offset, errors, line.lineNumber, false));
                     }
                 } else { 
                     uint8_t r = getRegCode(arg1);
@@ -476,19 +569,22 @@ std::string Assembler::secondPass() {
                 if (isDirectAddr(arg1)) { 
                     output.push_back(0x32);
                     std::string addrStr = Shared::trim(arg1.substr(1, arg1.size() - 2));
-                    uint16_t addr = resolveValue(addrStr, symbolTable, errors, line.lineNumber);
+                    uint16_t offset = initialAddress + output.size();
+                    uint16_t addr = resolveValueAndTrack(addrStr, offset, errors, line.lineNumber, true);
                     output.push_back(addr & 0xFF);
                     output.push_back((addr >> 8) & 0xFF);
                 } else if (isDirectAddr(arg2)) { 
                     output.push_back(0x3A);
                     std::string addrStr = Shared::trim(arg2.substr(1, arg2.size() - 2));
-                    uint16_t addr = resolveValue(addrStr, symbolTable, errors, line.lineNumber);
+                    uint16_t offset = initialAddress + output.size();
+                    uint16_t addr = resolveValueAndTrack(addrStr, offset, errors, line.lineNumber, true);
                     output.push_back(addr & 0xFF);
                     output.push_back((addr >> 8) & 0xFF);
                 } else if (!isRegister(arg2) && arg2 != "(HL)") { 
                     uint8_t r = getRegCode(arg1);
                     output.push_back(0b00000110 | (r << 3)); 
-                    output.push_back((uint8_t)resolveValue(arg2, symbolTable, errors, line.lineNumber));
+                    uint16_t offset = initialAddress + output.size();
+                    output.push_back((uint8_t)resolveValueAndTrack(arg2, offset, errors, line.lineNumber, false));
                 } else { 
                     uint8_t dest = getRegCode(arg1);
                     uint8_t src = getRegCode(arg2);
@@ -524,12 +620,14 @@ std::string Assembler::secondPass() {
                 else if (op == "CP")  immBase = 0xFE;
                 
                 output.push_back(immBase);
-                output.push_back((uint8_t)resolveValue(srcStr, symbolTable, errors, line.lineNumber));
+                uint16_t offset = initialAddress + output.size();
+                output.push_back((uint8_t)resolveValueAndTrack(srcStr, offset, errors, line.lineNumber, false));
             }
         } else if (op == "JP" || op == "CALL") {
             uint8_t base = (op == "JP") ? 0xC3 : 0xCD;
             output.push_back(base);
-            uint16_t addr = resolveValue(arg1, symbolTable, errors, line.lineNumber);
+            uint16_t offset = initialAddress + output.size();
+            uint16_t addr = resolveValueAndTrack(arg1, offset, errors, line.lineNumber, true);
             output.push_back(addr & 0xFF);
             output.push_back((addr >> 8) & 0xFF);
         } else if (op == "JR") {
@@ -549,21 +647,95 @@ std::string Assembler::secondPass() {
         return "";
     }
 
-    std::string filename = "program.bin";
-    std::ofstream out(filename, std::ios::binary);
-    if (!out) {
-        errors.push_back("Erro: Não foi possível criar o arquivo de saída " + filename);
+    std::string base = outputBaseName.empty() ? "program" : outputBaseName;
+
+    // 1. Gravar arquivo binário (.bin)
+    std::string binFilename = base + ".bin";
+    std::ofstream outBin(binFilename, std::ios::binary);
+    if (!outBin) {
+        errors.push_back("Erro: Não foi possível criar o arquivo de saída " + binFilename);
         return "";
     }
-    out.write(reinterpret_cast<const char*>(output.data()), output.size());
-    out.close();
+    outBin.write(reinterpret_cast<const char*>(output.data()), output.size());
+    outBin.close();
 
-    return filename;
+    // 2. Gravar arquivo objeto (.o)
+    std::string objFilename = base + ".o";
+    std::ofstream outObj(objFilename);
+    if (!outObj) {
+        errors.push_back("Erro: Não foi possível criar o arquivo de saída " + objFilename);
+        return "";
+    }
+
+    outObj << "HEADER\n";
+    outObj << "MODULE: " << moduleName << "\n";
+    outObj << "SIZE: " << output.size() << "\n\n";
+
+    outObj << "EXTDEF\n";
+    for (const auto& pub : publicSymbols) {
+        if (symbolTable.count(pub)) {
+            outObj << pub << " 0x" << std::hex << std::setw(4) << std::setfill('0') << std::uppercase << symbolTable.at(pub) << "\n";
+        }
+    }
+    outObj << "\n";
+
+    outObj << "EXTREF\n";
+    for (const auto& ext : externalSymbols) {
+        if (externalReferences.count(ext) && !externalReferences.at(ext).empty()) {
+            outObj << ext;
+            for (uint16_t offset : externalReferences.at(ext)) {
+                outObj << " 0x" << std::hex << std::setw(4) << std::setfill('0') << std::uppercase << offset;
+            }
+            outObj << "\n";
+        }
+    }
+    outObj << "\n";
+
+    outObj << "REALOC\n";
+    for (uint16_t offset : relocationOffsets) {
+        outObj << " 0x" << std::hex << std::setw(4) << std::setfill('0') << std::uppercase << offset << "\n";
+    }
+    outObj << "\n";
+
+    outObj << "CODE\n";
+    for (size_t i = 0; i < output.size(); ++i) {
+        if (i > 0) outObj << " ";
+        outObj << std::hex << std::setw(2) << std::setfill('0') << std::uppercase << (int)output[i];
+    }
+    outObj << "\n";
+
+    outObj.close();
+
+    return binFilename;
 }
 
 //retorna o path do binário gerado
 std::string Assembler::assemble(const std::string& asmCode) {
-    if (!firstPass(asmCode, 0)) {
+    std::string code = asmCode;
+    outputBaseName = "program";
+    std::ifstream file(asmCode);
+    if (file) {
+        std::stringstream ss;
+        ss << file.rdbuf();
+        code = ss.str();
+        file.close();
+
+        // Extrai base do nome do arquivo
+        size_t lastDot = asmCode.find_last_of(".");
+        if (lastDot != std::string::npos) {
+            outputBaseName = asmCode.substr(0, lastDot);
+        } else {
+            outputBaseName = asmCode;
+        }
+
+        // Tira o sufixo "-expanded" que o macro processor gera temporariamente
+        size_t expandedPos = outputBaseName.find("-expanded");
+        if (expandedPos != std::string::npos) {
+            outputBaseName = outputBaseName.substr(0, expandedPos);
+        }
+    }
+
+    if (!firstPass(code, 0)) {
         return "";
     }
     return secondPass();

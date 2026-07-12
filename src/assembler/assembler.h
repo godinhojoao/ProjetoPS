@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <unordered_set>
 #include <unordered_map>
 #include <cstdint>
 
@@ -62,6 +63,17 @@ private:
     std::vector<AsmLine> lines;
     std::vector<std::string> errors;
 
+    std::string moduleName;
+    std::string outputBaseName;
+    std::vector<std::string> publicSymbols;
+    std::unordered_set<std::string> publicSymbolsSet;
+    std::vector<std::string> externalSymbols;
+    std::unordered_set<std::string> externalSymbolsSet;
+    std::unordered_set<std::string> constantSymbols;
+
+    std::vector<uint16_t> relocationOffsets;
+    std::unordered_map<std::string, std::vector<uint16_t>> externalReferences;
+
     /**
      * @brief  Faz o parse de uma linha assembly, separando rótulo,
      *         operação e operandos. Remove comentários e espaços extras.
@@ -82,4 +94,6 @@ private:
      * @return Número de bytes que a instrução ocupa na memória; 0 se não reconhecida.
      */
     uint8_t calcSize(const std::string& operation, const std::string& operands) const;
+
+    uint16_t resolveValueAndTrack(const std::string& op, uint16_t offset, std::vector<std::string>& errors, int lineNum, bool is16Bit = true);
 };

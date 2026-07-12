@@ -88,7 +88,7 @@ static int checkMemory(const Memory& mem, uint16_t loadAddr,
 
 int main()
 {
-  const std::string objPath = "/tmp/projetops_object_loader_test.o";
+  const std::string objPath = "tests/projetops_object_loader_test.o";
   ObjectLoader loader;
 
   if (!writeTempObj(objPath, VALID_OBJ))
@@ -150,7 +150,7 @@ int main()
   std::cout << "[OK] realocacao em 0x0100 (CALL 0x0108, JP 0x010A)\n";
 
   // caso 4: offset de realocacao apontando fora do codigo deve falhar
-  const std::string badOffsetPath = "/tmp/projetops_object_loader_bad_offset.o";
+  const std::string badOffsetPath = "tests/projetops_object_loader_bad_offset.o";
   writeTempObj(badOffsetPath,
                "HEADER\nSIZE: 11\nREALOC\n0x0064\nCODE\n3E 05 CD 08 00 C3 0A 00 3C C9 76\n");
 
@@ -162,7 +162,7 @@ int main()
   std::cout << "[OK] offset de realocacao fora do codigo detectado\n";
 
   // caso 5: endereco realocado passando de 0xFFFF deve falhar (JP 0xFFF8 + 0x0100)
-  const std::string overflowPath = "/tmp/projetops_object_loader_overflow.o";
+  const std::string overflowPath = "tests/projetops_object_loader_overflow.o";
   writeTempObj(overflowPath, "HEADER\nSIZE: 3\nREALOC\n0x0001\nCODE\nC3 F8 FF\n");
 
   Memory mem4;
@@ -173,7 +173,7 @@ int main()
   std::cout << "[OK] estouro de 16 bits na realocacao detectado\n";
 
   // caso 6: byte hexadecimal invalido na secao CODE deve falhar sem crashar
-  const std::string badHexPath = "/tmp/projetops_object_loader_bad_hex.o";
+  const std::string badHexPath = "tests/projetops_object_loader_bad_hex.o";
   writeTempObj(badHexPath, "HEADER\nSIZE: 3\nCODE\n3E ZZ 76\n");
 
   Memory mem5;
@@ -185,7 +185,7 @@ int main()
 
   // caso 6b: lixo grudado no numero tambem invalida — std::stoul sozinho leria
   // "05Z" como 0x05 e engoliria o 'Z' calado
-  const std::string trailingPath = "/tmp/projetops_object_loader_trailing.o";
+  const std::string trailingPath = "tests/projetops_object_loader_trailing.o";
   writeTempObj(trailingPath, "HEADER\nSIZE: 3\nCODE\n3E 05Z 76\n");
 
   Memory mem5b;
@@ -196,7 +196,7 @@ int main()
   std::cout << "[OK] lixo grudado no byte hexadecimal tratado\n";
 
   // caso 7: SIZE menor que o CODE indica .o inconsistente
-  const std::string badSizePath = "/tmp/projetops_object_loader_bad_size.o";
+  const std::string badSizePath = "tests/projetops_object_loader_bad_size.o";
   writeTempObj(badSizePath, "HEADER\nSIZE: 2\nCODE\n3E 05 76\n");
 
   Memory mem6;
@@ -208,7 +208,7 @@ int main()
 
   // caso 8: arquivo inexistente deve retornar 0 sem crashar
   Memory mem7;
-  if (loader.load("/tmp/arquivo_que_nao_existe.o", mem7) != 0)
+  if (loader.load("tests/arquivo_que_nao_existe.o", mem7) != 0)
   {
     return fail("arquivo inexistente deveria retornar 0");
   }

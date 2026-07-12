@@ -38,6 +38,16 @@ TEST_LINKER_EXTREF_SRC = tests/linker_extref_test.cpp \
                          src/shared/shared.cpp
 TEST_LINKER_EXTREF_OUT = test_linker_extref
 
+TEST_ASSEMBLER_MODULAR_SRC = tests/assembler_modular_test.cpp \
+                             src/assembler/assembler.cpp \
+                             src/loader/object_loader.cpp \
+                             src/linker/linker.cpp \
+                             src/linker/global_symbol_table.cpp \
+                             src/linker/extref_resolver.cpp \
+                             src/shared/shared.cpp \
+                             src/memory/memory.cpp
+TEST_ASSEMBLER_MODULAR_OUT = test_assembler_modular
+
 all:
 	$(CXX) $(CXXFLAGS) $(SRC) -o $(OUT)
 
@@ -60,5 +70,9 @@ test-linker-extref:
 	$(CXX) $(CXXFLAGS) $(TEST_LINKER_EXTREF_SRC) -o $(TEST_LINKER_EXTREF_OUT)
 	./$(TEST_LINKER_EXTREF_OUT)
 
+test-assembler-modular:
+	$(CXX) $(CXXFLAGS) $(TEST_ASSEMBLER_MODULAR_SRC) -o $(TEST_ASSEMBLER_MODULAR_OUT)
+	./$(TEST_ASSEMBLER_MODULAR_OUT)
+
 clean:
-	rm -f $(OUT) $(TEST_LOADER_OUT) $(TEST_OBJECT_LOADER_OUT) $(TEST_LINKER_GTS_OUT) $(TEST_LINKER_EXTREF_OUT)
+	rm -f $(OUT) $(TEST_LOADER_OUT) $(TEST_OBJECT_LOADER_OUT) $(TEST_LINKER_GTS_OUT) $(TEST_LINKER_EXTREF_OUT) $(TEST_ASSEMBLER_MODULAR_OUT)

@@ -72,7 +72,7 @@ void CPU::setFlagMask(uint8_t mask, bool set)
 bool CPU::cycle(const Instruction &inst, Memory &mem) {
     switch (inst.type) {
 
-        case OpcodeType::HALT: {
+        case OpcodeType::HLT: {
             return false;
         }
 

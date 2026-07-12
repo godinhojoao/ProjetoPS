@@ -26,7 +26,7 @@ public:
   void setChild(const std::string& childLabel) {
     this->childs.push_back(childLabel);
   }
-  
+
   const std::string& getLabel() const {
     return label;
   }
@@ -45,7 +45,6 @@ private:
   std::string code;
   std::vector<std::string> params;
   std::vector<std::string> childs;
-
 };
 
 class MacroProcessor
@@ -80,7 +79,7 @@ private:
     {"POP", true},
 
     {"NOP", true},
-    {"HALT", true}
+    {"HLT", true}
   };
   std::string expandedCode;
   std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
@@ -97,20 +96,18 @@ private:
     isReadingMacro = true;
     openMacros++;
     macroInstructionsStack.push(MacroInstruction{});
-    std::cout << "openM this->openMacros:  " << this->openMacros << "\n";
   }
   void closeM(){
     this->macroInstructions.emplace(current().getLabel(), current());
     std::vector<std::string> childs = current().getChilds();
 
-    for( auto child : childs ) {
+    for(auto child : childs) {
       macroInstructions.erase(child);
     }
 
     macroInstructionsStack.pop();
     openMacros--;
     isReadingMacro = openMacros > 0;
-    std::cout << "closeM this->openMacros:  " << this->openMacros << "\n";
   }
 };
 

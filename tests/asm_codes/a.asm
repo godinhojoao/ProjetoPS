@@ -12,7 +12,7 @@ ADD_VALS 0x05, 0x05
   LD B, p1
   LD A, p2
   ADD A, B
-  HALT
+ HLT
 .endm
 NOP
-HALT
+HLT

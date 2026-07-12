@@ -131,7 +131,7 @@ AsmLine Assembler::parseLine(const std::string& rawLine, int lineNumber) const {
     // Separa mnemônico dos operandos pelo primeiro espaço ou tabulação
     size_t spacePos = remaining.find_first_of(" \t");
     if (spacePos == std::string::npos) {
-        // Só mnemônico, sem operandos (ex: NOP, HALT, RET)
+        // Só mnemônico, sem operandos (ex: NOP,HLT, RET)
         parsed.operation = toUpper(Shared::trim(remaining));
     } else {
         parsed.operation = toUpper(Shared::trim(remaining.substr(0, spacePos)));
@@ -145,7 +145,7 @@ AsmLine Assembler::parseLine(const std::string& rawLine, int lineNumber) const {
 // Referência de tamanhos: Z80 CPU User Manual (Zilog).
 //
 // Modos de endereçamento suportados:
-//   Implícito      -> NOP, HALT, RET, PUSH, POP, INC, DEC  (1 byte)
+//   Implícito      -> NOP,HLT, RET, PUSH, POP, INC, DEC  (1 byte)
 //   Imediato       -> LD r, n  (2 bytes)
 //   Direto         -> JP nn, CALL nn  (3 bytes)
 //   Indireto HL    -> LD r,(HL) / LD (HL),r  (1 byte)
@@ -193,7 +193,7 @@ uint8_t Assembler::calcSize(const std::string& operation, const std::string& ope
 
     // instruções de 1 byte
     if (operation == "NOP"  ||
-        operation == "HALT" ||
+        operation == "HLT" ||
         operation == "RET") {
         return 1;
     }
@@ -426,7 +426,7 @@ std::string Assembler::secondPass() {
 
         if (op == "NOP") {
             output.push_back(0x00);
-        } else if (op == "HALT") {
+        } else if (op == "HLT") {
             output.push_back(0x76);
         } else if (op == "RET") {
             output.push_back(0xC9);

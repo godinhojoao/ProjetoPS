@@ -50,7 +50,7 @@ std::vector<RelocationEntry> Linker::scan(const uint8_t* code, uint32_t codeSize
                 pc += 2;
                 break;
 
-            case 0x76: // HALT
+            case 0x76: //HLT
                 pc += 1;
                 break;
 

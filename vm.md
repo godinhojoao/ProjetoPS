@@ -76,7 +76,7 @@ s -> source
 | Pilha     | `PUSH rp`    | empilha registrador par          | `11 rp 0101` (BC/DE/HL/AF)        | 1     |
 |           | `POP rp`     | desempilha registrador par       | `11 rp 0001` (BC/DE/HL/AF)        | 1     |
 | Exec      | `NOP`        | não faz nada                     | `00 000 000`                       | 1     |
-|           | `HALT`       | para execução                    | `01 110 110`                       | 1     |
+|           | `HLT`       | para execução                    | `01 110 110`                       | 1     |
 
 ## Pilha da VM
 

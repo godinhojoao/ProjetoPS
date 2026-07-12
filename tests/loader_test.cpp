@@ -7,7 +7,7 @@ BinaryLoader::load, e verifica byte a byte que a memoria ficou correta.
 Programa de teste (4 bytes, opcodes da spec em vm.md):
   LD A, 0x42   ->  0x3E 0x42   (00 111 110 + n)
   ADD A, B     ->  0x80        (10 000 000)
-  HALT         ->  0x76        (01 110 110)
+ HLT         ->  0x76        (01 110 110)
 
 Nao depende de CPU, VM, decoder ou executor — so memory + binary_loader.
 */

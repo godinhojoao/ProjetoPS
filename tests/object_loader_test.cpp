@@ -14,7 +14,7 @@ Modulo de teste (11 bytes, opcodes da spec em vm.md), enderecos relativos:
   0x0005  C3 0A 00   JP   0x000A   -> operando em 0x0006 (realocavel)
   0x0008  3C         INC A
   0x0009  C9         RET
-  0x000A  76         HALT
+  0x000A  76        HLT
 
 Nao depende de CPU, VM, decoder ou executor — so memory + object_loader.
 */

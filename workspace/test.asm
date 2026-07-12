@@ -11,4 +11,4 @@ LD C, A
 INC B
 DEC C
 INC A
-HALT
+HLT

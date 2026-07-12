@@ -27,6 +27,43 @@ std::string MacroProcessor::expandMacro(MacroInstruction instruction, std::vecto
   return instructionParams.size() == 0 ? macroCode : Shared::replaceAllMany(macroCode, instructionParams, args);
 }
 
+void MacroProcessor::processCodeLine(const std::string& line, bool isInsideMacro) {
+  std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
+  std::string firstChunk = splittedCodeLine[0];
+
+  auto it = this->macroInstructions.find(firstChunk);
+  bool isMacroInstruction = it != this->macroInstructions.end();
+  bool isValidInstruction = this->validInstructions.count(firstChunk);
+
+  if (isInsideMacro) {
+    if (isMacroInstruction) {
+      std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
+      this->current().appendCode(this->expandMacro(it->second, macroArguments));
+      return;
+    }
+    if (isValidInstruction) {
+      this->current().appendCode(line);
+      return;
+    }
+  } else {
+    if (isValidInstruction) {
+      this->expandedCode.append(line + "\n");
+    }
+    if (isMacroInstruction) {
+      std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
+      this->expandedCode.append(this->expandMacro(it->second, macroArguments));
+      return;
+    }
+  }
+
+  bool isLabel = !firstChunk.empty() && firstChunk.back() == ':';
+  if (isLabel) {
+    this->expandedCode.append(line + "\n");
+  } else if (!isValidInstruction) {
+    throw std::runtime_error("nao é macro valida, nem instrucao valida");
+  }
+}
+
 void MacroProcessor::findAndStoreMacros(std::string file)
 {
   std::ifstream inFile;
@@ -92,63 +129,13 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
 
     if (currMacroReadingState == CODE && this->isReadingMacro) {
-      std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
-      std::string firstChunk = splittedCodeLine[0];
-
-      auto it = this->macroInstructions.find(firstChunk);
-      bool isMacroInstruction = it != this->macroInstructions.end();
-      MacroInstruction currMacroInstruction;
-      bool isValidInstruction = this->validInstructions.count(firstChunk);
-
-      if (isMacroInstruction) {
-        currMacroInstruction = it->second;
-        std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
-        std::string expandedCode = this->expandMacro(currMacroInstruction, macroArguments);
-        this->current().appendCode(expandedCode);
-        continue;
-      } else if(isValidInstruction){
-        this->current().appendCode(line);
-        continue;
-      }
-
-      bool isLabel = !firstChunk.empty() && firstChunk.back() == ':';
-      if (isLabel) {
-        this->expandedCode.append(line + "\n");
-      } else if (!isValidInstruction) {
-        throw std::runtime_error("nao é macro valida, nem instrucao valida");
-      }
+      this->processCodeLine(line, true);
     }
 
     hasFinishedMacroRead = !this->isReadingMacro && line.find(".macro") != 0;
 
-    // reading code
     if (hasFinishedMacroRead) {
-      std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
-      std::string firstChunk = splittedCodeLine[0];
-
-      bool isValidInstruction = this->validInstructions.count(firstChunk);
-      if (isValidInstruction) {
-        this->expandedCode.append(line + "\n");
-      }
-
-      auto it = this->macroInstructions.find(firstChunk);
-      bool isMacroInstruction = it != this->macroInstructions.end();
-      MacroInstruction currMacroInstruction;
-      if (isMacroInstruction) {
-        currMacroInstruction = it->second;
-        std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
-
-        std::string expandedCode = this->expandMacro(currMacroInstruction, macroArguments);
-        this->expandedCode.append(expandedCode);
-        continue;
-      }
-
-      bool isLabel = !firstChunk.empty() && firstChunk.back() == ':';
-      if (isLabel) {
-        this->expandedCode.append(line + "\n");
-      } else if (!isValidInstruction) {
-        throw std::runtime_error("nao é macro valida, nem instrucao valida");
-      }
+      this->processCodeLine(line, false);
     }
   }
 

@@ -83,6 +83,7 @@ private:
   };
   std::string expandedCode;
   std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
+  void processCodeLine(const std::string& line, bool isInsideMacro);
 
   // controle de fluxo
   std::stack<MacroInstruction> macroInstructionsStack;

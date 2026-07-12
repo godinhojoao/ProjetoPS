@@ -255,11 +255,11 @@ bool Linker::link(const std::vector<std::string>& inputPaths, const std::string&
         }
         
         for (uint16_t reloc : mod.relocs) {
-            if (reloc + 1 < mod.code.size()) {
-                uint16_t val = (uint16_t)mod.code[reloc] | ((uint16_t)mod.code[reloc + 1] << 8);
-                val += baseOffset;
-                mod.code[reloc]     = val & 0xFF;
-                mod.code[reloc + 1] = (val >> 8) & 0xFF;
+            if (reloc + 1 < mod.code.size()) { // garante que os 2 bytes cabem no array
+                uint16_t val = (uint16_t)mod.code[reloc] | ((uint16_t)mod.code[reloc + 1] << 8); // monta endereço 16 bits (little-endian)
+                val += baseOffset; // converte relativo -> absoluto
+                mod.code[reloc] = val & 0xFF;  // grava byte baixo
+                mod.code[reloc + 1] = (val >> 8) & 0xFF; // grava byte alto
             }
             outputObj.relocs.push_back(reloc + baseOffset);
         }

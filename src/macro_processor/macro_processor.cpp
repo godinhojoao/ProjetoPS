@@ -36,19 +36,16 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
   // 1. reading line by line and processing without holding entire file content
   std::string line;
-  bool isReadingMacro = false;
   bool hasFinishedMacroRead = false;
-  MacroInstruction instruction;
   MACRO_READING_STATE currMacroReadingState = MACRO_NAME;
 
   while (std::getline(inFile, line))
   {
     // validations
     line = Shared::trim(line); // remove comentarios e espacos
-    //std::cout << "line->" << line <<"\n";
     if (line.size() == 0) continue;
 
-    if (!isReadingMacro && line.find(".endm") == 0) {
+    if (!this->isReadingMacro && line.find(".endm") == 0) {
       throw std::runtime_error("Nao pode fechar macro que nao foi aberta");
     }
 
@@ -57,8 +54,11 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
 
     // reading macro
-    if (line.find(".macro") == 0 && !isReadingMacro) {
-      isReadingMacro = true;
+    if (line.find(".macro") == 0) {
+      MacroInstruction* parentMacro = !macroInstructionsStack.empty() ? &current() : nullptr;
+      this->openM();
+      currMacroReadingState = MACRO_NAME;
+
       std::vector<std::string> splittedResult = Shared::split(line, ' ');
 
       for (int i = 0; i < splittedResult.size(); ++i)
@@ -66,7 +66,8 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         std::string currChunk = splittedResult[i];
         if (currMacroReadingState == MACRO_NAME && i == 1)
         {
-          instruction.setLabel(currChunk);
+          this->current().setLabel(currChunk);
+          if (parentMacro) parentMacro->setChild(currChunk);
           bool hasParams = splittedResult.size() > 2;
           currMacroReadingState = hasParams ? PARAM : CODE;
           continue;
@@ -75,7 +76,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         if (currMacroReadingState == PARAM)
         {
           bool isLastParam = i == splittedResult.size() - 1;
-          instruction.pushParam(isLastParam ? currChunk : currChunk.substr(0, currChunk.size() - 1));
+          this->current().pushParam(isLastParam ? currChunk : currChunk.substr(0, currChunk.size() - 1));
           currMacroReadingState = isLastParam ? CODE : PARAM;
           continue;
         }
@@ -84,19 +85,41 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       continue;
     }
 
-    if (line.find(".endm") == 0 && isReadingMacro) {
-      isReadingMacro = false;
-      this->macroInstructions.emplace(instruction.getLabel(), instruction);
-      instruction = MacroInstruction{};
-      currMacroReadingState = MACRO_NAME;
+    if (line.find(".endm") == 0 && this->isReadingMacro) {
+      this->closeM();
+      currMacroReadingState = this->isReadingMacro ? CODE : MACRO_NAME;
       continue;
     }
 
-    if (currMacroReadingState == CODE) {
-      instruction.appendCode(line);
+    if (currMacroReadingState == CODE && this->isReadingMacro) {
+      std::vector<std::string> splittedCodeLine = Shared::split(line, ' ');
+      std::string firstChunk = splittedCodeLine[0];
+
+      auto it = this->macroInstructions.find(firstChunk);
+      bool isMacroInstruction = it != this->macroInstructions.end();
+      MacroInstruction currMacroInstruction;
+      bool isValidInstruction = this->validInstructions.count(firstChunk);
+
+      if (isMacroInstruction) {
+        currMacroInstruction = it->second;
+        std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
+        std::string expandedCode = this->expandMacro(currMacroInstruction, macroArguments);
+        this->current().appendCode(expandedCode);
+        continue;
+      } else if(isValidInstruction){
+        this->current().appendCode(line);
+        continue;
+      }
+
+      bool isLabel = !firstChunk.empty() && firstChunk.back() == ':';
+      if (isLabel) {
+        this->expandedCode.append(line + "\n");
+      } else if (!isValidInstruction) {
+        throw std::runtime_error("nao é macro valida, nem instrucao valida");
+      }
     }
 
-    hasFinishedMacroRead = !isReadingMacro && line.find(".macro") != 0;
+    hasFinishedMacroRead = !this->isReadingMacro && line.find(".macro") != 0;
 
     // reading code
     if (hasFinishedMacroRead) {
@@ -109,8 +132,9 @@ void MacroProcessor::findAndStoreMacros(std::string file)
       }
 
       auto it = this->macroInstructions.find(firstChunk);
+      bool isMacroInstruction = it != this->macroInstructions.end();
       MacroInstruction currMacroInstruction;
-      if (it != this->macroInstructions.end()) {
+      if (isMacroInstruction) {
         currMacroInstruction = it->second;
         std::vector<std::string> macroArguments(splittedCodeLine.begin() + 1, splittedCodeLine.end());
 
@@ -128,7 +152,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
     }
   }
 
-  if(isReadingMacro) {
+  if(this->isReadingMacro) {
     throw std::runtime_error("abriu macro e nao fechou");
   }
   inFile.close();

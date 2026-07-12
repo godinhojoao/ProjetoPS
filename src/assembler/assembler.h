@@ -8,7 +8,7 @@
 // Representa uma linha já parseada do código assembly
 struct AsmLine {
     std::string label;      // rótulo (sem ':'), vazio se não houver
-    std::string operation;  // mnemônico (ex: LD, ADD, HALT...)
+    std::string operation;  // mnemônico (ex: LD, ADD,HLT...)
     std::string operands;   // tudo após o mnemônico (ex: "A, B")
     uint16_t    address;    // endereço de memória desta instrução
     uint8_t     size;       // tamanho em bytes desta instrução

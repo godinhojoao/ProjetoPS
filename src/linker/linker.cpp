@@ -50,7 +50,7 @@ std::vector<RelocationEntry> Linker::scan(const uint8_t* code, uint32_t codeSize
                 pc += 2;
                 break;
 
-            case 0x76: // HALT
+            case 0x76: //HLT
                 pc += 1;
                 break;
 
@@ -255,9 +255,15 @@ bool Linker::link(const std::vector<std::string>& inputPaths, const std::string&
         }
         
         for (uint16_t reloc : mod.relocs) {
+            if (reloc + 1 < mod.code.size()) {
+                uint16_t val = (uint16_t)mod.code[reloc] | ((uint16_t)mod.code[reloc + 1] << 8);
+                val += baseOffset;
+                mod.code[reloc]     = val & 0xFF;
+                mod.code[reloc + 1] = (val >> 8) & 0xFF;
+            }
             outputObj.relocs.push_back(reloc + baseOffset);
         }
-        
+
         outputObj.code.insert(outputObj.code.end(), mod.code.begin(), mod.code.end());
     }
     

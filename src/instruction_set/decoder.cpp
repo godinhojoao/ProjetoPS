@@ -15,9 +15,9 @@ Instruction Decoder::decode(const Memory& memory, uint16_t pc) {
             inst.type = OpcodeType::NOP;
             return inst;
             
-        // HALT
+        //HLT
         case 0x76:
-            inst.type = OpcodeType::HALT;
+            inst.type = OpcodeType::HLT;
             return inst;
             
         // RET

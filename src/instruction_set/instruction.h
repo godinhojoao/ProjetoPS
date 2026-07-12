@@ -24,7 +24,7 @@ enum class Register : uint8_t {
 // Tipos de operações suportadas pela VM
 enum class OpcodeType : uint8_t {
     NOP = 0,
-    HALT,
+   HLT,
     LD_R_R,
     LD_R_N,
     LD_HL_R,

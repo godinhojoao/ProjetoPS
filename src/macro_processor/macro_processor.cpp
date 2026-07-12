@@ -56,6 +56,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
 
     // reading macro
     if (line.find(".macro") == 0) {
+      MacroInstruction parentMacro = current();
       this->openM();
       currMacroReadingState = MACRO_NAME;
 
@@ -67,6 +68,7 @@ void MacroProcessor::findAndStoreMacros(std::string file)
         if (currMacroReadingState == MACRO_NAME && i == 1)
         {
           this->current().setLabel(currChunk);
+          parentMacro.setChild(currChunk);
           bool hasParams = splittedResult.size() > 2;
           currMacroReadingState = hasParams ? PARAM : CODE;
           continue;

@@ -25,6 +25,8 @@ set(PROJECT_SOURCES
         ../src/instruction_set/instruction.h
         ../src/loader/binary_loader.cpp
         ../src/loader/binary_loader.h
+        ../src/loader/object_loader.cpp
+        ../src/loader/object_loader.h
         ../src/memory/memory.cpp
         ../src/memory/memory.h
         ../src/vm/vm.cpp
@@ -37,6 +39,12 @@ set(PROJECT_SOURCES
         ../src/shared/shared.h
         ../src/assembler/assembler.cpp
         ../src/assembler/assembler.h
+        ../src/linker/extref_resolver.cpp
+        ../src/linker/extref_resolver.h
+        ../src/linker/global_symbol_table.cpp
+        ../src/linker/global_symbol_table.h
+        ../src/linker/linker.cpp
+        ../src/linker/linker.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)

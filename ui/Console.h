@@ -37,13 +37,13 @@ Commands (all operations are done inside root):
     save  <path>                  save open file          e.g: save src/main.asm
 
   Build
-    assemble <f1> <f2> ...        assemble files into .o  (not implemented)
-    link     <f1> <f2> ...        link .o into binary     (not implemented)
-    build    <f1> <f2> ...        assemble + link         (not implemented)
-    run      <path>               load and execute binary
-    load     <path>               load a binary file to VM
-    step                          execute 1 instruction of a loaded file
-    reset                         reset cpu state
+    assemble <f1> <f2> ...                   assemble files into .o  (not implemented)
+    link     <f1> <f2> ... -o <a.bin>        link .o into binary     (not implemented)
+    build    <f1> <f2> ... -o <a.bin>        assemble + link         (not implemented)
+    run      <path>                          load and execute binary
+    load     <path>                          load a binary file to VM
+    step                                     execute 1 instruction of a loaded file
+    reset                                    reset cpu state
 
   General
     help                          show this message

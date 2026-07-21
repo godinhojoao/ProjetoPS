@@ -7,6 +7,7 @@
 #include "vmstate.h"
 #include "assembler/assembler.h"
 #include "macro_processor/macro_processor.h"
+#include "linker/linker.h"
 #include <QCoreApplication>
 
 /*
@@ -28,8 +29,11 @@ public:
     bool remove(const QString &input);
 
     QStringList assemble(const QStringList &input);
-    QString link(const QStringList &input);
-    bool build(const QStringList &input);
+
+    QString link(const QStringList &input, const QString &output = "a.bin");
+
+    bool build(const QStringList &input, const QString &output = "a.bin");
+
     bool run(const QString &binPath);
 
     bool load(const QString &binPath);
@@ -56,6 +60,7 @@ private:
     VM vm;
     Assembler assembler;
     MacroProcessor mp;
+    Linker linker;
 
 };
 

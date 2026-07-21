@@ -140,15 +140,43 @@ void Console::assemble(const QStringList &tokens) {
 }
 
 void Console::link(const QStringList &tokens) {
-    // link <f1> <f2> ...
+    // link <f1> <f2> ... -o <output name optional>
+    // Exemplo de uso: link f1.bin f2.bin -o output.bin
     if(tokens.size() < 2) {
         emit output("missing operand on link");
         return;
     }
 
-    if(project->link(tokens.mid(1)).isEmpty()) {
-        emit output("Failed to link files");
+    QStringList inputFiles;
+    QString outputName = "a.bin"; // assume a.bin
+
+    for(int i = 1; i < tokens.size(); i++) {
+
+        if(tokens[i] == "-o") { //se achou a flag de nome
+            //verifica se tem nome
+            if(i+1 < tokens.size()) {
+                outputName = tokens[i+1];
+                i++; // pula iteração
+            } else {
+                emit output("missing output filename after '-o'");
+                return;
+            }
+        } else { //é filepath
+            inputFiles.append(tokens[i]);
+        }
     }
+
+    if(inputFiles.isEmpty()) {
+        emit output("no input files to link");
+        return;
+    }
+
+    if(project->link(inputFiles, outputName).isEmpty()) {
+        emit output("failed to link files");
+    } else {
+        emit output("files linked succefully to " + outputName);
+    }
+
 }
 
 void Console::run(const QStringList &tokens) {
@@ -167,15 +195,44 @@ void Console::run(const QStringList &tokens) {
 }
 
 void Console::build(const QStringList &tokens) {
+    // build <f1> <f2> ... -o <output name optional>
+    // Exemplo de uso: build f1.bin f2.bin -o output.bin
     if(tokens.size() < 2) {
         emit output("missing operand on build");
         return;
     }
 
-    bool success = project->build(tokens.mid(1));
-    if(!success) {
-        emit output("Failed to build(assemble and link) files");
+
+    QStringList inputFiles;
+    QString outputName = "a.bin"; // assume a.bin
+
+    for(int i = 1; i < tokens.size(); i++) {
+
+        if(tokens[i] == "-o") { //se achou a flag de nome
+            //verifica se tem nome
+            if(i+1 < tokens.size()) {
+                outputName = tokens[i+1];
+                i++; // pula iteração
+            } else {
+                emit output("missing output filename after '-o'");
+                return;
+            }
+        } else { //é filepath
+            inputFiles.append(tokens[i]);
+        }
     }
+
+    if(inputFiles.isEmpty()) {
+        emit output("no input files to build");
+        return;
+    }
+
+    if(project->build(inputFiles, outputName)) {
+        emit output("files builded succefully to " + outputName);
+    } else {
+        emit output("failed to build files");
+    }
+
 }
 
 void Console::load(const QStringList &tokens) {

@@ -90,17 +90,28 @@ QStringList Project::assemble(const QStringList &input) {
     return binPaths;
 }
 
-QString Project::link(const QStringList &input) {
-    // nao ta pronto ainda ent n tem, mas recebe a lista de .bin
-    // devolve o Path de um .bin final
+QString Project::link(const QStringList &input, const QString &output) {
+    //recebe a lista de .bin e devolve o Path de um .bin final
+    // output é nome do arquivo final
+    // linker.link()
+    std::vector<std::string> linkerInput;
+    for(const QString& filepath : input) {
+        linkerInput.push_back(filepath.toStdString());
+    }
+
+    if (linker.link(linkerInput, output.toStdString())) {
+        return resolvePath(output);
+    }
+
     return "";
 }
 
-bool Project::build(const QStringList &input) {
+bool Project::build(const QStringList &input, const QString &output) {
     QStringList filesAssembled = assemble(input);
     if(filesAssembled.empty()) return false;
 
-    QString finalBinPath = link(input);
+
+    QString finalBinPath = link(input, output);
     if(finalBinPath.isEmpty()) return false;
 
     //acho q esse run n é necessário aqui, mas caso for...

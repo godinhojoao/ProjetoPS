@@ -263,8 +263,14 @@ void MainWindow::onCommandEntered() {
     ui->commandInput->clear();
 }
 
+
+/*
+ * O BOTAO TA MANDANDO PATH ERRADO E TA EXPLODINDO O ASSEMBLER
+ * A INTERFACE DE COMANDO POR LINHA FUNCIONA
+ */
+
 void MainWindow::onAssembleClicked() {
-    ui->consoleOutput->appendPlainText("assemble clicked");
+    // ui->consoleOutput->appendPlainText("assemble clicked");
 
     // Aqui a própria janela gerencia a lógica interna
     // com o mesmo controller (project)
@@ -274,13 +280,13 @@ void MainWindow::onAssembleClicked() {
 }
 
 void MainWindow::onLinkClicked() {
-    ui->consoleOutput->appendPlainText("link clicked");
+    // ui->consoleOutput->appendPlainText("link clicked");
     btnBuild_popup dialog(project, "link", this);
     dialog.exec();
 }
 
 void MainWindow::onBuildClicked() {
-    ui->consoleOutput->appendPlainText("build clicked");
+    // ui->consoleOutput->appendPlainText("build clicked");
     btnBuild_popup dialog(project, "build", this);
     dialog.exec();
 }

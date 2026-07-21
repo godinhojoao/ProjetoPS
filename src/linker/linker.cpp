@@ -68,6 +68,7 @@ std::vector<RelocationEntry> Linker::scan(const uint8_t* code, uint32_t codeSize
 
 bool Linker::writeObj(const std::string& path, const LinkerObjectFile& obj) {
     std::ofstream file(path);
+
     if (!file) {
         std::cerr << "Linker: nao foi possivel criar '" << path << "'\n";
         return false;

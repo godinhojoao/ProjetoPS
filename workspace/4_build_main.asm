@@ -4,14 +4,17 @@
 ; simbolo externo de 4_build_lib.asm
 ; ================================================
 
-MODULE principal_build
-PUBLIC MAIN
-EXTERN SOMA_LIB, SUB_LIB
+
 
 .macro CARREGA p1, p2
   LD A, p1
   LD B, p2
 .endm
+
+; essas diretivas precisam vir dps pq o processador de macro só aceita elas no topo
+MODULE principal_build
+PUBLIC MAIN
+EXTERN SOMA_LIB, SUB_LIB
 
 MAIN:
     CARREGA 0x08, 0x02

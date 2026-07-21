@@ -1,0 +1,9 @@
+MODULE biblioteca_build
+PUBLIC SOMA_LIB, SUB_LIB
+SOMA_LIB:
+ADD A, B
+RET
+SUB_LIB:
+SUB B
+RET
+END

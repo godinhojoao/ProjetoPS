@@ -31,7 +31,7 @@ void Console::executeCommand(const QString &line) {
     } else if(command == "assemble") {
         assemble(tokens);
     } else if(command == "link") {
-        //ainda n ta implementado, n tem backend
+        link(tokens);
     } else if(command == "run") {
         run(tokens);
     } else if(command == "build") {
@@ -134,6 +134,9 @@ void Console::assemble(const QStringList &tokens) {
         return;
     }
 
+
+    //AQUI EU TENHO Q VALIDAR SE O NOME DO ARQUIVO NAO É ALGO FODASE
+    // Q NAO EXISTE
     if(project->assemble(tokens.mid(1)).empty()) {
         emit output("Failed to assemble files");
     }
@@ -148,7 +151,7 @@ void Console::link(const QStringList &tokens) {
     }
 
     QStringList inputFiles;
-    QString outputName = "a.bin"; // assume a.bin
+    QString outputName = "output.o"; // usa o formato .o que o linker gera
 
     for(int i = 1; i < tokens.size(); i++) {
 
@@ -204,7 +207,7 @@ void Console::build(const QStringList &tokens) {
 
 
     QStringList inputFiles;
-    QString outputName = "a.bin"; // assume a.bin
+    QString outputName = "output.o"; // usa o formato .o q o linker gera
 
     for(int i = 1; i < tokens.size(); i++) {
 

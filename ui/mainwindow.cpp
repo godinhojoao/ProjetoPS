@@ -25,8 +25,7 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     QShortcut* saveShortcut = new QShortcut(QKeySequence("Ctrl+S"), this); //cria um shortcut Ctrl+S
 
     ui->tabShowData->setTabText(0, "Registradores e Flags");
-    ui->tabShowData->setTabText(1, "Assembler");
-    ui->tabShowData->setTabText(2, "Linker");
+    ui->tabShowData->setTabText(1, "Área de memória");
 
     // ---------------------------------------------------
     // Conexões entre Signals/Slots
@@ -71,6 +70,7 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     // Configuração das tabelas de registrador e memória
     // ---------------------------------------------------
     // Registradores
+    ui->tableRegs->setEditTriggers(QAbstractItemView::NoEditTriggers); //bloqueia edição
     ui->tableRegs->setRowCount(10);
     ui->tableRegs->setColumnCount(2);
     ui->tableRegs->setHorizontalHeaderLabels({"Registrador", "Valor"});
@@ -339,14 +339,14 @@ void MainWindow::updateRegFlagTable(const VMState &state) {
     ui->tableRegs->item(4, 1)->setText(QString::number(state.E));
     ui->tableRegs->item(5, 1)->setText(QString::number(state.H));
     ui->tableRegs->item(6, 1)->setText(QString::number(state.L));
-    ui->tableRegs->item(7, 1)->setText(QString::number(state.F));
-    ui->tableRegs->item(8, 1)->setText(QString::number(state.PC));
-    ui->tableRegs->item(9, 1)->setText(QString::number(state.SP));
+    ui->tableRegs->item(7, 1)->setText(QString::number(state.PC));
+    ui->tableRegs->item(8, 1)->setText(QString::number(state.SP));
+    ui->tableRegs->item(9, 1)->setText(QString::number(state.F));
 
     ui->tableFlags->item(0, 1)->setText(state.flagZ ? "1" : "0");
-    ui->tableFlags->item(1, 1)->setText(state.flagS ? "1" : "0");
-    ui->tableFlags->item(2, 1)->setText(state.flagC ? "1" : "0");
-    ui->tableFlags->item(3, 1)->setText(state.flagH ? "1" : "0");
-    ui->tableFlags->item(4, 1)->setText(state.flagN ? "1" : "0");
-    ui->tableFlags->item(5, 1)->setText(state.flagPV ? "1" : "0");
+    ui->tableFlags->item(1, 1)->setText(state.flagC ? "1" : "0");
+    ui->tableFlags->item(2, 1)->setText(state.flagS ? "1" : "0");
+    ui->tableFlags->item(3, 1)->setText(state.flagPV ? "1" : "0");
+    ui->tableFlags->item(4, 1)->setText(state.flagH ? "1" : "0");
+    ui->tableFlags->item(5, 1)->setText(state.flagN ? "1" : "0");
 }

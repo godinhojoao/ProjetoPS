@@ -96,11 +96,13 @@ QString Project::link(const QStringList &input, const QString &output) {
     // linker.link()
     std::vector<std::string> linkerInput;
     for(const QString& filepath : input) {
-        linkerInput.push_back(filepath.toStdString());
+        QString resolved = resolvePath(filepath);
+        linkerInput.push_back(resolved.toStdString());
     }
 
-    if (linker.link(linkerInput, output.toStdString())) {
-        return resolvePath(output);
+    QString outputResolved = resolvePath(output);
+    if (linker.link(linkerInput, outputResolved.toStdString())) {
+        return outputResolved;
     }
 
     return "";
@@ -122,7 +124,14 @@ bool Project::build(const QStringList &input, const QString &output) {
 
 bool Project::run(const QString &binPath) {
     QString path = resolvePath(binPath);
-    if(!vm.load(path.toStdString())) return false;
+
+    // executa a função de load respectiva
+    if(binPath.endsWith(".bin")) {
+        if(!vm.load(path.toStdString())) return false;
+
+    } else if(binPath.endsWith(".o")) {
+        if(!vm.loadObject(path.toStdString())) return false;
+    }
 
     vm.run();
     emit flagsAndReg_Modified(vm.getState());
@@ -133,7 +142,14 @@ bool Project::run(const QString &binPath) {
 bool Project::load(const QString &binPath) {
     QString path = resolvePath(binPath) ;
     vm.reset();
-    if(!vm.load(path.toStdString())) return false;
+
+    // executa a função de load respectiva
+    if(binPath.endsWith(".bin")) {
+        if(!vm.load(path.toStdString())) return false;
+
+    } else if(binPath.endsWith(".o")) {
+        if(!vm.loadObject(path.toStdString())) return false;
+    }
 
     emit flagsAndReg_Modified(vm.getState());
     return true;

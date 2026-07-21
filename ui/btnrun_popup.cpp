@@ -17,7 +17,7 @@ btnRun_popup::btnRun_popup(const QString &rootPath, QWidget *parent)
     // 3. opção doq vai ser buscado (podia incluir diretório por exemplo),
     // 4. diz como o iterador vai percorrer, o subdirectories entra dentro de diretórios)
     // dps de instanciado o QDirIterator é uma lista com os caminhos (strings)
-    QDirIterator fileOpt(rootPath, QStringList() << "*.bin", QDir::Files, QDirIterator::Subdirectories);
+    QDirIterator fileOpt(rootPath, QStringList() << "*.bin" << "*.o", QDir::Files, QDirIterator::Subdirectories);
 
     while(fileOpt.hasNext()) {
         QString filePath = fileOpt.next();

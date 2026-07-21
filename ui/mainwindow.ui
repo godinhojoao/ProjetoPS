@@ -101,7 +101,7 @@
       </widget>
       <widget class="QTabWidget" name="tabShowData">
        <property name="currentIndex">
-        <number>0</number>
+        <number>1</number>
        </property>
        <widget class="QWidget" name="MemReg">
         <attribute name="title">
@@ -122,11 +122,6 @@
        <widget class="QWidget" name="Assembler">
         <attribute name="title">
          <string>Tab 2</string>
-        </attribute>
-       </widget>
-       <widget class="QWidget" name="Linker">
-        <attribute name="title">
-         <string>Page</string>
         </attribute>
        </widget>
       </widget>

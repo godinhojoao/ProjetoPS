@@ -30,9 +30,9 @@ public:
 
     QStringList assemble(const QStringList &input);
 
-    QString link(const QStringList &input, const QString &output = "a.bin");
+    QString link(const QStringList &input, const QString &output = "output.o");
 
-    bool build(const QStringList &input, const QString &output = "a.bin");
+    bool build(const QStringList &input, const QString &output = "output.o");
 
     bool run(const QString &binPath);
 

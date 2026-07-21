@@ -79,8 +79,30 @@ private:
     {"POP", true},
 
     {"NOP", true},
-    {"HLT", true}
+    {"HLT", true},
+
+    // diretivas do assembler
+    {"ORG", true},
+    {"EQU", true},
+    {"END", true},
+    {"DB", true},
+    {"DW", true},
+    {"DS", true},
+    {"SPACE", true},
+    {"CONST", true},
+    {"MODULE", true},
+    {"NAME", true},
+    {"IDENT", true},
+    {"PUBLIC", true},
+    {"GLOBAL", true},
+    {"GLOB", true},
+    {"EXTDEF", true},
+    {"EXTERN", true},
+    {"EXT", true},
+    {"EXTREF", true}
+
   };
+
   std::string expandedCode;
   std::string expandMacro(MacroInstruction instruction, std::vector<std::string> args);
   void processCodeLine(const std::string& line, bool isInsideMacro);

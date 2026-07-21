@@ -4,6 +4,7 @@
 #include "Project.h"
 #include "btnrun_popup.h"
 #include "btnbuild_popup.h"
+#include "memory.h"
 #include <QDir>
 #include <QHeaderView>
 #include <QIcon>
@@ -26,6 +27,15 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
 
     ui->tabShowData->setTabText(0, "Registradores e Flags");
     ui->tabShowData->setTabText(1, "Área de memória");
+
+    ui->tableMem->setRowCount(4096);
+    ui->tableMem->setColumnCount(16);
+
+    QStringList headers;
+    for (int c = 0; c < 16; c++) headers << QString::number(c, 16).toUpper();
+    ui->tableMem->setHorizontalHeaderLabels(headers);
+
+    updateMemoryView(); //zera a area de memória
 
     // ---------------------------------------------------
     // Conexões entre Signals/Slots
@@ -276,6 +286,7 @@ void MainWindow::onAssembleClicked() {
     // com o mesmo controller (project)
     // oq eu fiz com o btnRun foi diferente por causa dos objetos (e foi meio gambiarra)
     btnBuild_popup dialog(project, "assemble", this);
+    updateMemoryView();
     dialog.exec();
 }
 
@@ -297,6 +308,7 @@ void MainWindow::onLoadClicked() {
     if(dialog.exec() == QDialog::Accepted) {
         project->resetCpu();
         project->load(dialog.getSelectedFileName());
+        updateMemoryView();
         ui->consoleOutput->appendPlainText("File loaded successfully");
     } else {
         ui->consoleOutput->appendPlainText("Failed to laod .bin file");
@@ -309,6 +321,7 @@ void MainWindow::onRunClicked() {
     if(dialog.exec() == QDialog::Accepted) {
         project->resetCpu();
         project->run(dialog.getSelectedFilePath());
+        updateMemoryView();
         ui->consoleOutput->appendPlainText("Runned succesfully");
     } else {
         ui->consoleOutput->appendPlainText("Failed to run .bin file");
@@ -318,6 +331,7 @@ void MainWindow::onRunClicked() {
 void MainWindow::onStepClicked() {
     if(project->isLoaded()) {
         project->step();
+        updateMemoryView();
         // ui->consoleOutput->appendPlainText("step");
     } else {
         ui->consoleOutput->appendPlainText("Nenhum programa carregado na memória");
@@ -326,6 +340,7 @@ void MainWindow::onStepClicked() {
 
 void MainWindow::onResetClicked() {
     project->resetCpu();
+    updateMemoryView();
     ui->consoleOutput->appendPlainText("CPU Reseted");
 }
 
@@ -349,4 +364,48 @@ void MainWindow::updateRegFlagTable(const VMState &state) {
     ui->tableFlags->item(3, 1)->setText(state.flagPV ? "1" : "0");
     ui->tableFlags->item(4, 1)->setText(state.flagH ? "1" : "0");
     ui->tableFlags->item(5, 1)->setText(state.flagN ? "1" : "0");
+}
+
+void MainWindow::updateMemoryView() {
+    const Memory &mem = project->getMemory();
+    const uint8_t *raw = mem.raw(); //pega um ponteiro de referência (só leitura) pra toda área de memória
+
+    //isso evita pintar um quadrado à cada modificação, ele vai guardando e depois quando liga pinta tudo de uma vez.
+    ui->tableMem->setUpdatesEnabled(false);
+
+    for (uint32_t row = 0; row < 4096; row++) {
+        ui->tableMem->setVerticalHeaderItem(row, new QTableWidgetItem(QString("%1").arg(row * 16, 4, 16, QChar('0')).toUpper()));
+
+        for (int col = 0; col < 16; col++) {
+            uint32_t addr = row * 16 + col;
+            //formata a string do hexadecimal
+            QString hex = QString("%1").arg(raw[addr], 2, 16, QChar('0')).toUpper();
+
+            QTableWidgetItem *item = ui->tableMem->item(row, col);
+            if(!item) {
+                item = new QTableWidgetItem();
+                item->setFlags(item->flags() & ~Qt::ItemIsEditable); //deixa ele só leitura
+                ui->tableMem->setItem(row, col, item);
+            }
+            item->setText(hex);
+        }
+    }
+    ui->tableMem->setUpdatesEnabled(true); //atualiza
+
+    if (pcHighlightItem) {
+        pcHighlightItem->setBackground(Qt::NoBrush); // tira a cor da célula antiga
+    }
+
+    uint16_t pc = project->getVmState().PC;
+    int pcRow = pc / 16;
+    int pcCol = pc % 16;
+
+    QTableWidgetItem *newHighlight = ui->tableMem->item(pcRow, pcCol);
+    if (newHighlight) {
+        newHighlight->setBackground(QColor("#3a7bd5")); // azul
+        pcHighlightItem = newHighlight;
+    }
+
+    ui->tableMem->scrollToItem(newHighlight); // rola a tabela até a célula
+    ui->tableMem->setUpdatesEnabled(true);
 }

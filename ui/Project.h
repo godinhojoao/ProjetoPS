@@ -49,6 +49,7 @@ public:
     bool isLoaded() const;
 
     VMState getVmState() const;
+    const Memory& getMemory() const;
 
 signals:
     void flagsAndReg_Modified(const VMState &state);

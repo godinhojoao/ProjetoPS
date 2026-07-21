@@ -1,6 +1,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QTableWidget>
 #include <QMainWindow>
 #include <QFileSystemModel>
 #include <QPlainTextEdit>
@@ -36,6 +37,9 @@ private:
     QFileSystemModel *modelFiles; //ponteiro pro model que vai ler os arquivos
     // QString rootDir = "/home/lucascacz/ProjectTestQT";
 
+    QTableWidgetItem *pcHighlightItem = nullptr; //guarda a célula do PC atual
+
+
     void openNewFile(const QString &fileName, const QString &content, const QString &filepath); //função interna pra criar as abas dinamicamente (durante exec)
     void on_treeFiles_doubleClicked(const QModelIndex &index);
     void closeTab(int index);
@@ -53,5 +57,6 @@ private:
     void onResetClicked();
 
     void updateRegFlagTable(const VMState &state);
+    void updateMemoryView();
 };
 #endif // MAINWINDOW_H

@@ -1,0 +1,14 @@
+LD A, 5
+LD B, 3
+LD C, 2
+LD D, 16
+LD E, 1
+ADD A, B
+ADD A, C
+SUB B
+LD B, A
+LD C, A
+INC B
+DEC C
+INC A
+HLT

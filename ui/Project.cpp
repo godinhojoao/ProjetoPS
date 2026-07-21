@@ -188,3 +188,7 @@ bool Project::isLoaded() const{
 VMState Project::getVmState() const {
     return vm.getState();
 }
+
+const Memory& Project::getMemory() const {
+    return vm.getMemory();
+}

@@ -17,6 +17,9 @@ public:
 
   void resetSegments();
 
+  //funções pra expor ponteiro de leitura pra memória e tamanho
+  const uint8_t* raw() const { return data; }
+  static constexpr uint32_t SIZE = VM_MEMORY_IN_BYTES; // permite acessar com vm::SIZE e custa 1x pra cada instancia da vm
 private:
   uint8_t data[VM_MEMORY_IN_BYTES] = {};
   uint32_t codeEnd = 0;

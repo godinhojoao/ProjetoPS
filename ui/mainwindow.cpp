@@ -59,7 +59,7 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     connect(ui->btnReset,       &QPushButton::clicked,          this,               &MainWindow::onResetClicked);
 
     connect(project, &Project::flagsAndReg_Modified, this, &MainWindow::updateRegFlagTable);
-
+    connect(project, &Project::flagsAndReg_Modified, this, &MainWindow::updateMemoryView);
     // ---------------------------------------------------
     // Conexão e configuração do visualizador de arquivos
     // ---------------------------------------------------
@@ -286,7 +286,7 @@ void MainWindow::onAssembleClicked() {
     // com o mesmo controller (project)
     // oq eu fiz com o btnRun foi diferente por causa dos objetos (e foi meio gambiarra)
     btnBuild_popup dialog(project, "assemble", this);
-    updateMemoryView();
+    // updateMemoryView();
     dialog.exec();
 }
 
@@ -307,8 +307,8 @@ void MainWindow::onLoadClicked() {
 
     if(dialog.exec() == QDialog::Accepted) {
         project->resetCpu();
-        project->load(dialog.getSelectedFileName());
-        updateMemoryView();
+        project->load(dialog.getSelectedFilePath());
+        // updateMemoryView();
         ui->consoleOutput->appendPlainText("File loaded successfully");
     } else {
         ui->consoleOutput->appendPlainText("Failed to laod .bin file");
@@ -321,7 +321,7 @@ void MainWindow::onRunClicked() {
     if(dialog.exec() == QDialog::Accepted) {
         project->resetCpu();
         project->run(dialog.getSelectedFilePath());
-        updateMemoryView();
+        // updateMemoryView();
         ui->consoleOutput->appendPlainText("Runned succesfully");
     } else {
         ui->consoleOutput->appendPlainText("Failed to run .bin file");
@@ -331,7 +331,7 @@ void MainWindow::onRunClicked() {
 void MainWindow::onStepClicked() {
     if(project->isLoaded()) {
         project->step();
-        updateMemoryView();
+        // updateMemoryView();
         // ui->consoleOutput->appendPlainText("step");
     } else {
         ui->consoleOutput->appendPlainText("Nenhum programa carregado na memória");
@@ -340,7 +340,7 @@ void MainWindow::onStepClicked() {
 
 void MainWindow::onResetClicked() {
     project->resetCpu();
-    updateMemoryView();
+    // updateMemoryView();
     ui->consoleOutput->appendPlainText("CPU Reseted");
 }
 

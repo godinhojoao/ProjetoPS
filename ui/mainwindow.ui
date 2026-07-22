@@ -101,9 +101,9 @@
       </widget>
       <widget class="QTabWidget" name="tabShowData">
        <property name="currentIndex">
-        <number>1</number>
+        <number>0</number>
        </property>
-       <widget class="QWidget" name="MemReg">
+       <widget class="QWidget" name="RegFlags">
         <attribute name="title">
          <string>Tab 1</string>
         </attribute>

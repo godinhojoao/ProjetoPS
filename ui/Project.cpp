@@ -156,8 +156,9 @@ bool Project::load(const QString &binPath) {
 }
 
 bool Project::step() {
+    bool ok = vm.step();
     emit flagsAndReg_Modified(vm.getState());
-    return vm.step();
+    return ok;
 }
 
 void Project::resetCpu() {

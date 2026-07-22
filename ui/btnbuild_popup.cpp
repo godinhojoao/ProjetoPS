@@ -61,7 +61,7 @@ void btnBuild_popup::on_buttonBox_accepted() {
         QFileInfo fileInfo(ui->fileList->item(i)->text());
         QString relativePath = QDir(project->getRootDir()).relativeFilePath(fileInfo.absoluteFilePath());
 
-        files.append(fileInfo.fileName());
+        files.append(relativePath);
     }
 
     if(action == "assemble") {

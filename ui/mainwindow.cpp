@@ -35,6 +35,10 @@ MainWindow::MainWindow(Project *project, QWidget *parent)
     for (int c = 0; c < 16; c++) headers << QString::number(c, 16).toUpper();
     ui->tableMem->setHorizontalHeaderLabels(headers);
 
+    for (uint32_t row = 0; row < 4096; row++) {
+        ui->tableMem->setVerticalHeaderItem(row, new QTableWidgetItem(QString("%1").arg(row * 16, 4, 16, QChar('0')).toUpper()));
+    }
+
     updateMemoryView(); //zera a area de memória
 
     // ---------------------------------------------------
@@ -374,8 +378,6 @@ void MainWindow::updateMemoryView() {
     ui->tableMem->setUpdatesEnabled(false);
 
     for (uint32_t row = 0; row < 4096; row++) {
-        ui->tableMem->setVerticalHeaderItem(row, new QTableWidgetItem(QString("%1").arg(row * 16, 4, 16, QChar('0')).toUpper()));
-
         for (int col = 0; col < 16; col++) {
             uint32_t addr = row * 16 + col;
             //formata a string do hexadecimal
@@ -390,7 +392,6 @@ void MainWindow::updateMemoryView() {
             item->setText(hex);
         }
     }
-    ui->tableMem->setUpdatesEnabled(true); //atualiza
 
     if (pcHighlightItem) {
         pcHighlightItem->setBackground(Qt::NoBrush); // tira a cor da célula antiga
@@ -404,8 +405,8 @@ void MainWindow::updateMemoryView() {
     if (newHighlight) {
         newHighlight->setBackground(QColor("#3a7bd5")); // azul
         pcHighlightItem = newHighlight;
+        ui->tableMem->scrollToItem(newHighlight); // rola a tabela até a célula
     }
 
-    ui->tableMem->scrollToItem(newHighlight); // rola a tabela até a célula
     ui->tableMem->setUpdatesEnabled(true);
 }

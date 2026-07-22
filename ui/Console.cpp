@@ -252,6 +252,10 @@ void Console::load(const QStringList &tokens) {
 }
 
 void Console::step(const QStringList &tokens) {
+    if(!project->isLoaded()) {
+        emit output("Nenhum programa carregado na memória");
+        return;
+    }
     if(!project->step()) {
         emit output("Failed to proceed with execution");
     }
